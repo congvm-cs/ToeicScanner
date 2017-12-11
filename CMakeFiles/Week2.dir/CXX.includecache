@@ -6,6 +6,22 @@
 
 #IncludeRegexTransform: 
 
+/home/vmc/Desktop/Scanner/Week2.cpp
+opencv2/core/core.hpp
+/home/vmc/Desktop/Scanner/opencv2/core/core.hpp
+opencv2/imgproc/imgproc.hpp
+/home/vmc/Desktop/Scanner/opencv2/imgproc/imgproc.hpp
+opencv2/highgui/highgui.hpp
+/home/vmc/Desktop/Scanner/opencv2/highgui/highgui.hpp
+iostream
+-
+math.h
+-
+string.h
+-
+toeicscanner.h
+/home/vmc/Desktop/Scanner/toeicscanner.h
+
 /home/vmc/Desktop/Scanner/toeicscanner.cpp
 toeicscanner.h
 /home/vmc/Desktop/Scanner/toeicscanner.h
@@ -93,6 +109,10 @@ opencv2/core/neon_utils.hpp
 /usr/local/include/opencv2/core/opencv2/core/neon_utils.hpp
 
 /usr/local/include/opencv2/core/bufferpool.hpp
+
+/usr/local/include/opencv2/core/core.hpp
+opencv2/core.hpp
+/usr/local/include/opencv2/core/opencv2/core.hpp
 
 /usr/local/include/opencv2/core/core_c.h
 opencv2/core/types_c.h
@@ -746,6 +766,10 @@ opencv2/videoio.hpp
 opencv2/highgui/highgui_c.h
 /usr/local/include/opencv2/opencv2/highgui/highgui_c.h
 
+/usr/local/include/opencv2/highgui/highgui.hpp
+opencv2/highgui.hpp
+/usr/local/include/opencv2/highgui/opencv2/highgui.hpp
+
 /usr/local/include/opencv2/highgui/highgui_c.h
 opencv2/core/core_c.h
 /usr/local/include/opencv2/highgui/opencv2/core/core_c.h
@@ -799,6 +823,10 @@ opencv2/highgui.hpp
 /usr/local/include/opencv2/opencv2/highgui.hpp
 opencv2/imgproc/imgproc_c.h
 /usr/local/include/opencv2/opencv2/imgproc/imgproc_c.h
+
+/usr/local/include/opencv2/imgproc/imgproc.hpp
+opencv2/imgproc.hpp
+/usr/local/include/opencv2/imgproc/opencv2/imgproc.hpp
 
 /usr/local/include/opencv2/imgproc/imgproc_c.h
 opencv2/imgproc/types_c.h

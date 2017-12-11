@@ -12,16 +12,12 @@ Mat ToeicScanner::Process(Mat img)
     result = this->LoadInputImage(img);
     result = this->Preprocess(this->inputImage);
     result = this->Detect(result);
-
-    imshow("result", result);
-    waitKey(0);
-    destroyAllWindows();
-
-    result = this->Align(result);
-    result = this->DrawVerticalGrid(result);
-    result = this->DrawHorizontalGrid(result);
-    this->DetectAnswer(result);
-    result = this->DrawCircle(result);
+    Mat resultAlign;
+    resultAlign = this->Align(result);
+    resultAlign = this->DrawVerticalGrid(resultAlign);
+    resultAlign = this->DrawHorizontalGrid(resultAlign);
+    this->DetectAnswer(resultAlign);
+    //result = this->DrawCircle(result);
     return result;
 }
 
