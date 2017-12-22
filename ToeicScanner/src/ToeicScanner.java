@@ -1,5 +1,3 @@
-package testOpenCV;
-
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -14,6 +12,8 @@ import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.utils.Converters;
 import org.opencv.video.Video;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import static java.lang.Math.max;
@@ -30,6 +30,7 @@ public class ToeicScanner {
 	private Mat inputImage = new Mat();                   // store configured input image
 	private Mat colorInputImage = new Mat();                // store configured input image with color
 	private Mat templateImage = new Mat();                  // store configured template image
+	private Mat drawRoiImage = new Mat();
 	private List<MatOfPoint> squares = new ArrayList<>();  // store points of squares (bounding box)
 	private List<Integer> xGrid = new ArrayList<>();                  		// store bubble answer by x axis
 	private List<Integer> yGrid = new ArrayList<>();          		// store bubble answer by y axis
@@ -45,29 +46,35 @@ public class ToeicScanner {
         return this.answers;
     };
     
-	public Mat Process(Mat img){
-		this.LoadTemplate();
-		this.LoadInputImage(img);
-		Mat result = new Mat();
-		
-		result = this.Preprocess(this.inputImage);
-		this.Detect(result);
-				
-		Mat resultAlign = new Mat(); 
-		resultAlign = this.Align(result);
-		
-		
+    public String AlignProcess() {
+    	Mat resultAlign = new Mat();
+    	try {
+		resultAlign = this.Align(this.drawRoiImage);
+    	
 		resultAlign = this.DrawVerticalGrid(resultAlign, true);
 		resultAlign = this.DrawHorizontalGrid(resultAlign, true);
 		
 		this.DetectAnswer(resultAlign);
 		resultAlign = this.DrawCircle(resultAlign);
-		return this.colorInputImage;
+    	}
+    	catch(Exception e) {    		
+    		return "False";
+    	}
+    	return "True";
+    }
+    
+	public Mat DetectROI(Mat img){
+		this.LoadTemplate();
+		this.LoadInputImage(img);
+		Mat result = new Mat();
+		this.drawRoiImage = this.Preprocess(this.inputImage);
+		result = this.Detect(this.drawRoiImage);
+		return result;
 	};
 		
 	private void LoadTemplate()
 	{
-        Mat template_temp = Imgcodecs.imread("/home/vmc/Desktop/Scanner/assets/templates/T2.jpg");
+        Mat template_temp = Imgcodecs.imread("/media/vmc/Data/VMC/Workspace/Toeic-Scanner/Scanner/assets/templates/T2.jpg");
 	    resize(template_temp, template_temp, new Size(1280, 768));
 	    Imgproc.cvtColor(template_temp, template_temp, Imgproc.COLOR_BGR2GRAY);
 	    this.templateImage = template_temp;
@@ -105,7 +112,7 @@ public class ToeicScanner {
   
   
 	//=======================
-    private void Detect(Mat img){
+    private Mat Detect(Mat img){
     	
         List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
         
@@ -146,6 +153,7 @@ public class ToeicScanner {
             Imgproc.circle(this.colorInputImage, new Point(this.approxf1.get(i, 0)), 15, new  Scalar(0, 0, 255), 2);
             Imgproc.circle(this.colorInputImage, new Point(this.approxf1.get(i, 0)), 5,new  Scalar(0, 0, 255), -1);
         }
+        return this.colorInputImage;
     };
 
     
