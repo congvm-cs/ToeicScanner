@@ -72,8 +72,10 @@ public class ToeicScanner {
 		return result;
 	};
 		
-	private void LoadTemplate()
-	{
+	private void LoadTemplate(){
+		/*
+		 * 
+		 * */
         Mat template_temp = Imgcodecs.imread("/media/vmc/Data/VMC/Workspace/Toeic-Scanner/Scanner/assets/templates/T2.jpg");
 	    resize(template_temp, template_temp, new Size(1280, 768));
 	    Imgproc.cvtColor(template_temp, template_temp, Imgproc.COLOR_BGR2GRAY);
