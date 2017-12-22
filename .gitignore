@@ -3,5 +3,8 @@
 RemoteSystemsTempFiles/
 
 *.marks
+<<<<<<< HEAD
 
 *.fnm
+=======
+>>>>>>> master
