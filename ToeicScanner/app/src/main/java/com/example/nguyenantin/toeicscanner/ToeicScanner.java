@@ -68,7 +68,6 @@ public class ToeicScanner {
 
     public Mat DetectROI(Mat img){
         this.LoadInputImage(img);
-
         this.drawRoiImage = this.Preprocess(this.inputImage);
         result = this.Detect(this.drawRoiImage);
         return result;
@@ -114,7 +113,6 @@ public class ToeicScanner {
 
     //=======================
     private Mat Detect(Mat img){
-
         List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
 
         /// Find contours
@@ -126,7 +124,7 @@ public class ToeicScanner {
         for (int idx = 0; idx < contours.size(); idx++) {
             Mat contour = contours.get(idx);
             double contourArea = Imgproc.contourArea(contour);
-            if (contourArea > maxContourArea){
+            if ((contourArea > maxContourArea) && (contourArea > img.cols*img.rols/2)){
                 maxContourArea = contourArea;
                 indexContour = idx;
             }
