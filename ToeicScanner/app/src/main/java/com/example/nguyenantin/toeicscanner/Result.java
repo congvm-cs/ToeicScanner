@@ -12,23 +12,27 @@ public class Result
     private String result;
     private String result2;
     private String id;
-    private int stt;
+    private String stt;
+    int crread = 0;
+    int crlisten = 0;
     public Result() {
     }
 
-    public Result(int stt, String result, String result2) {
+    public Result(String stt, String result, String result2) {
         this.result = result;
         this.result2 = result2;
+        this.crlisten = 0;
+        this.crread = 0;
         this.stt = stt;
     }
-    public Result(JSONObject object) {
-        try {
-            this.id = object.getString("made");
-            this.result = object.getString("result");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
+//    public Result(JSONObject object) {
+//        try {
+//            this.id = object.getString("made");
+//            this.result = object.getString("result");
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     public Result(String result) {
         this.result = result;
@@ -41,10 +45,10 @@ public class Result
     public void setId(String id) {
         this.id = id;
     }
-    public int getStt() {
+    public String getStt() {
         return stt;
     }
-    public void setStt(int stt) {
+    public void setStt(String stt) {
         this.stt = stt;
     }
     public String getResult() {

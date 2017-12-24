@@ -15,7 +15,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name="Loading"
+            android:name=".SubmitIdTest"
             android:screenOrientation="landscape">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -24,16 +24,13 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".CameraToiec"
-            android:screenOrientation="landscape" />
-        <activity
             android:name=".CheckPicture"
             android:screenOrientation="landscape" />
         <activity
-            android:name=".CheckTest"
+            android:name=".Loading"
             android:screenOrientation="landscape" />
         <activity
-            android:name=".SubmitIdTest"
+            android:name=".CheckTest"
             android:screenOrientation="landscape" />
     </application>
 

@@ -182,6 +182,7 @@
                                     android:orientation="vertical">
                                     <TextView
                                         android:layout_width="match_parent"
+                                        android:id="@+id/txt_crlisten"
                                         android:layout_weight="1"
                                         android:text="0"
                                         android:textSize="15dp"
@@ -192,6 +193,7 @@
                                     <TextView
                                         android:layout_width="match_parent"
                                         android:gravity="center"
+                                        android:id="@+id/txt_icrlisten"
                                         android:textStyle="bold"
                                         android:text="0"
                                         android:textSize="15dp"
@@ -276,6 +278,7 @@
                                         android:layout_width="match_parent"
                                         android:layout_weight="1"
                                         android:text="0"
+                                        android:id="@+id/txt_crread"
                                         android:gravity="center"
                                         android:textStyle="bold"
                                         android:textSize="15dp"
@@ -286,6 +289,7 @@
                                         android:gravity="center"
                                         android:textStyle="bold"
                                         android:text="0"
+                                        android:id="@+id/txt_icrread"
                                         android:textSize="15dp"
                                         android:layout_weight="1"
                                         android:background="@android:color/white"
@@ -316,6 +320,7 @@
                                 android:textStyle="bold"
                                 android:textAlignment="center"
                                 android:text="0"
+                                android:id="@+id/txt_sum"
                                 android:background="#2AD4FF"
                                 android:textColor="#0044AA"
                                 android:textSize="18dp"
