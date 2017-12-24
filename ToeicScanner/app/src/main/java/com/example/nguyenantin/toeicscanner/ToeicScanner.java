@@ -10,10 +10,10 @@ import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.core.TermCriteria;
-import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.utils.Converters;
 import org.opencv.video.Video;
+
 import java.util.ArrayList;
 import java.util.List;
 import static java.lang.Math.max;
@@ -26,11 +26,11 @@ import static org.opencv.imgproc.Imgproc.resize;
 import static org.opencv.imgproc.Imgproc.threshold;
 import static org.opencv.imgproc.Imgproc.warpAffine;
 
-
 public class ToeicScanner {
     private Mat inputImage = new Mat();                   // store configured input image
     private Mat colorInputImage = new Mat();                // store configured input image with color
     private Mat templateImage = new Mat();                  // store configured template image
+    private Mat drawRoiImage = new Mat();
     private List<MatOfPoint> squares = new ArrayList<>();  // store points of squares (bounding box)
     private List<Integer> xGrid = new ArrayList<>();                  		// store bubble answer by x axis
     private List<Integer> yGrid = new ArrayList<>();          		// store bubble answer by y axis
@@ -41,34 +41,41 @@ public class ToeicScanner {
     private List<Character> answers = new ArrayList<>();               // store bubble answer from paper
     private int choosenThreshold = 50;
 
+
+    Mat result = new Mat();
+    Mat resultAlign = new Mat();
     //============================================================================================//
+
     public List<Character> GetAnswers(){
         return this.answers;
     };
 
-    public Mat Process(Mat img){
-//        this.LoadTemplate();
+    public String AlignProcess() {
+        try {
+            resultAlign = this.Align(this.drawRoiImage);
+
+            resultAlign = this.DrawVerticalGrid(resultAlign, true);
+            resultAlign = this.DrawHorizontalGrid(resultAlign, true);
+
+            this.DetectAnswer(resultAlign);
+            resultAlign = this.DrawCircle(resultAlign);
+        }
+        catch(Exception e) {
+            return "False";
+        }
+        return "True";
+    }
+
+    public Mat DetectROI(Mat img){
         this.LoadInputImage(img);
-        Mat result = new Mat();
 
-        result = this.Preprocess(this.inputImage);
-        this.Detect(result);
-
-        Mat resultAlign = new Mat();
-        resultAlign = this.Align(result);
-
-
-        resultAlign = this.DrawVerticalGrid(resultAlign, true);
-        resultAlign = this.DrawHorizontalGrid(resultAlign, true);
-
-        this.DetectAnswer(resultAlign);
-        resultAlign = this.DrawCircle(resultAlign);
-        return this.colorInputImage;
+        this.drawRoiImage = this.Preprocess(this.inputImage);
+        result = this.Detect(this.drawRoiImage);
+        return result;
     };
 
-    private void LoadTemplate()
-    {
-        Mat template_temp = Imgcodecs.imread("/home/vmc/Desktop/Scanner/assets/templates/T2.jpg");
+    public void LoadTemplate(Mat temp){
+        Mat template_temp = temp;
         resize(template_temp, template_temp, new Size(1280, 768));
         Imgproc.cvtColor(template_temp, template_temp, Imgproc.COLOR_BGR2GRAY);
         this.templateImage = template_temp;
@@ -106,7 +113,7 @@ public class ToeicScanner {
 
 
     //=======================
-    private void Detect(Mat img){
+    private Mat Detect(Mat img){
 
         List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
 
@@ -143,10 +150,11 @@ public class ToeicScanner {
 
         for(int i = 0; i < this.approxf1.total(); i++)
         {
-            System.out.println(this.approxf1.get(i, 0));
+            this.approxf1.get(i, 0);
             Imgproc.circle(this.colorInputImage, new Point(this.approxf1.get(i, 0)), 15, new  Scalar(0, 0, 255), 2);
             Imgproc.circle(this.colorInputImage, new Point(this.approxf1.get(i, 0)), 5,new  Scalar(0, 0, 255), -1);
         }
+        return this.colorInputImage;
     };
 
 
@@ -163,8 +171,8 @@ public class ToeicScanner {
 
         Point tl = new Point();
         Point br = new Point();
-        Point tr = new Point();
-        Point bl = new Point();
+        Point tr;
+        Point bl;
         // Find Top Left Point
         int indexMinSum = 0;
         int minSum = (int) (squarePoint.get(0).x + squarePoint.get(0).y) ;

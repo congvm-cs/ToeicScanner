@@ -5,7 +5,7 @@ android {
     buildToolsVersion "26.0.2"
 
     defaultConfig {
-        minSdkVersion 8
+        minSdkVersion 21
         targetSdkVersion 23
     }
 
@@ -15,12 +15,4 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
     }
-//    splits {
-//        abi {
-//            enable true
-//            reset()
-//            include 'x86', 'armeabi', 'armeabi-v7a', 'mips'
-//            universalApk false
-//        }
-//    }
 }

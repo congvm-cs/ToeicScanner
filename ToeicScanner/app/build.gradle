@@ -4,7 +4,7 @@ android {
     compileSdkVersion 26
     defaultConfig {
         applicationId "com.example.nguyenantin.toeicscanner"
-        minSdkVersion 8
+        minSdkVersion 21
         targetSdkVersion 26
         versionCode 1
         versionName "1.0"
@@ -13,25 +13,9 @@ android {
     buildTypes {
         release {
             minifyEnabled false
-//            minifyEnabled true
-//            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-    sourceSets {
-        main {
-            jni.srcDirs = []
-            jniLibs.srcDirs = ['src/main/libs', 'src/main/jniLibs'] // Here!
-        }
-    }
-//    splits {
-//        abi {
-//            enable true
-//            reset()
-//            include 'x86', 'armeabi', 'armeabi-v7a', 'mips'
-//            universalApk false
-//        }
-//    }
 }
 
 dependencies {
@@ -39,9 +23,5 @@ dependencies {
     implementation 'com.android.support:appcompat-v7:26.1.0'
     implementation 'com.android.support.constraint:constraint-layout:1.0.2'
     testImplementation 'junit:junit:4.12'
-    compile fileTree(dir: "$buildDir/native-libs", include: 'native-libs.jar')
     compile 'com.loopj.android:android-async-http:1.4.9'
-    androidTestImplementation 'com.android.support.test:runner:1.0.1'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
-    implementation project(':openCVLibrary330')
 }

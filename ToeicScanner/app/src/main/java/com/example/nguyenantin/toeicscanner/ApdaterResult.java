@@ -63,56 +63,5 @@ public class ApdaterResult extends ArrayAdapter<Result> {
 
         return convertView;
     }
-//    @NonNull
-//    @Override
-//    public View getView(int position, View convertView, @NonNull ViewGroup parent) {
-//        LayoutInflater inflater = this.context.getLayoutInflater();
-//        View row = inflater.inflate(this.resource,null);
-//
-//        ll_backgroundresult = (LinearLayout) row.findViewById(R.id.ll_backgroundresult);
-//        TextView txt_result = (TextView) row.findViewById(R.id.txt_result);
-//        TextView txt_user = (TextView) row.findViewById(R.id.txt_user);
-//        TextView txt_stt = (TextView) row.findViewById(R.id.txt_stt);
-//
-//        final Result result = this.objects.get(position);
-//        txt_result.setText(result.getResult());
-//        txt_user.setText(result.getResult2());
-//        txt_stt.setText(result.getStt());
-//        if (!result.getResult().toString().equals(result.getResult2().toString())){
-//            txt_user.setBackgroundResource(R.drawable.textincorrect);
-//            txt_result.setBackgroundResource(R.drawable.textincorrect);
-//            txt_stt.setBackgroundResource(R.drawable.textincorrect);
-//            int white = context.getResources().getColor(R.color.colorWhite1);
-//            txt_user.setTextColor(white);
-//            txt_stt.setTextColor(white);
-//            txt_result.setTextColor(white);
-//        } else {
-//            ll_backgroundresult.setBackgroundResource(R.drawable.listview);
-//        }
-//
-////        btnLike.setOnClickListener(new View.OnClickListener() {
-////            @Override
-////            public void onClick(View view) {
-////                xuLyThich(result);
-////            }
-////        });
-////
-////        btnDisklike.setOnClickListener(new View.OnClickListener() {
-////            @Override
-////            public void onClick(View view) {
-////                xuLyBoThich(result);
-////            }
-////        });
-//
-//        return row;
-//    }
-
-//    private void xuLyBoThich(Result result) {
-//        result.setThich(false);
-//    }
-//
-//    private void xuLyThich(Result result) {
-//        result.setThich(true);
-//    }
 }
 

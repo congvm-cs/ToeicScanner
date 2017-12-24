@@ -12,11 +12,11 @@ public class Result
     private String result;
     private String result2;
     private String id;
-    private String stt;
+    private int stt;
     public Result() {
     }
 
-    public Result(String stt, String result, String result2) {
+    public Result(int stt, String result, String result2) {
         this.result = result;
         this.result2 = result2;
         this.stt = stt;
@@ -41,10 +41,10 @@ public class Result
     public void setId(String id) {
         this.id = id;
     }
-    public String getStt() {
+    public int getStt() {
         return stt;
     }
-    public void setStt(String stt) {
+    public void setStt(int stt) {
         this.stt = stt;
     }
     public String getResult() {

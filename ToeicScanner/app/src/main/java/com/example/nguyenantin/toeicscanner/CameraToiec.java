@@ -2,42 +2,29 @@ package com.example.nguyenantin.toeicscanner;
 
 import android.app.Activity;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Date;
 
-import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.Picture;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.hardware.Camera;
 import android.hardware.Camera.PictureCallback;
-import android.hardware.Camera.ShutterCallback;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.util.Log;
-import java.text.SimpleDateFormat;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-
-import org.opencv.android.BaseLoaderCallback;
-import org.opencv.android.LoaderCallbackInterface;
-import org.opencv.android.OpenCVLoader;
-import org.opencv.android.Utils;
-import org.opencv.core.*;
-import org.opencv.imgcodecs.Imgcodecs;
-
-import cz.msebera.android.httpclient.protocol.HTTP;
 
 public class CameraToiec extends Activity {
 
@@ -48,11 +35,30 @@ public class CameraToiec extends Activity {
     private static final String TAG = "CameraDemo";
     private Camera mCamera;
     private CameraPreview mPreview;
-
+    private ImageView capturedImageHolder;
     public static final int MEDIA_TYPE_IMAGE = 1;
+
     public static final int MEDIA_TYPE_VIDEO = 2;
+    public PictureCallback mPicture = new PictureCallback() {
 
+        @Override
+        public void onPictureTaken(byte[] data, Camera camera) {
 
+            File pictureFile = getOutputMediaFile(MEDIA_TYPE_IMAGE);
+            if (pictureFile == null){
+                return;
+            }
+            try {
+                FileOutputStream fos = new FileOutputStream(pictureFile);
+                fos.write(data);
+                fos.close();
+            } catch (FileNotFoundException e) {
+                Log.d(TAG, "File not found: " + e.getMessage());
+            } catch (IOException e) {
+                Log.d(TAG, "Error accessing file: " + e.getMessage());
+            }
+        }
+    };
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
@@ -67,16 +73,26 @@ public class CameraToiec extends Activity {
         mPreview = new CameraPreview(this, mCamera);
         FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
         // Add a listener to the Capture button
-        Button captureButton = (Button) findViewById(R.id.btn_takepicture);
+        btnTake = (Button) findViewById(R.id.btn_takepicture);
 
-        captureButton.setOnClickListener(
+        btnTake.setOnClickListener(
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         // get an image from the camera
                         mCamera.takePicture(null, null, mPicture);
-                        Intent intentview = new Intent(CameraToiec.this,CheckPicture.class);
-                        CameraToiec.this.startActivity(intentview);
+                        //
+
+
+
+                        //
+                        Intent i = new Intent(CameraToiec.this, CheckPicture.class);
+                        Bitmap b = getBitmapFromView(mPreview);
+                        ByteArrayOutputStream bs = new ByteArrayOutputStream();
+                        b.compress(Bitmap.CompressFormat.JPEG, 50, bs);
+                        i.putExtra("newsky", bs.toByteArray());
+                        Log.e(TAG, "Show image ");
+                        startActivity(i);
                     }
                 }
         );
@@ -84,15 +100,25 @@ public class CameraToiec extends Activity {
 
     }
 
-    /** Check if this device has a camera */
-    private boolean checkCameraHardware(Context context) {
-        if (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)){
-            // this device has a camera
-            return true;
-        } else {
-            // no camera on this device
-            return false;
+
+    private Bitmap getBitmapFromView(View view) {
+        //Define a bitmap with the same size as the view
+        Bitmap returnedBitmap = Bitmap.createBitmap(view.getWidth(), view.getHeight(),Bitmap.Config.ARGB_8888);
+        //Bind a canvas to it
+        Canvas canvas = new Canvas(returnedBitmap);
+        //Get the view's background
+        Drawable bgDrawable =view.getBackground();
+        if (bgDrawable!=null) {
+            //has background drawable, then draw it on the canvas
+            bgDrawable.draw(canvas);
+        }   else{
+            //does not have background drawable, then draw white background on the canvas
+            canvas.drawColor(Color.WHITE);
         }
+        // draw the view on the canvas
+        view.draw(canvas);
+        //return the bitmap
+        return returnedBitmap;
     }
     /** A safe way to get an instance of the Camera object. */
     public static Camera getCameraInstance(){
@@ -104,15 +130,6 @@ public class CameraToiec extends Activity {
             // Camera is not available (in use or does not exist)
         }
         return c; // returns null if camera is unavailable
-    }
-    ShutterCallback shutterCallback = new ShutterCallback() {
-        public void onShutter() {
-            Log.d(TAG, "onShutter'd");
-        }
-    };
-    /** Create a file Uri for saving an image or video */
-    private static Uri getOutputMediaFileUri(int type){
-        return Uri.fromFile(getOutputMediaFile(type));
     }
 
     /** Create a File for saving an image or video */
@@ -132,13 +149,13 @@ public class CameraToiec extends Activity {
                 return null;
             }
         }
-
+        ImageView abc;
         // Create a media file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String timeStamp = "test1";
         File mediaFile;
         if (type == MEDIA_TYPE_IMAGE){
             mediaFile = new File(mediaStorageDir.getPath() + File.separator +
-                    "IMG_"+ timeStamp + ".jpg");
+                    timeStamp + ".jpg");
         } else if(type == MEDIA_TYPE_VIDEO) {
             mediaFile = new File(mediaStorageDir.getPath() + File.separator +
                     "VID_"+ timeStamp + ".mp4");
@@ -148,25 +165,4 @@ public class CameraToiec extends Activity {
 
         return mediaFile;
     }
-    private PictureCallback mPicture = new PictureCallback() {
-
-        @Override
-        public void onPictureTaken(byte[] data, Camera camera) {
-
-            File pictureFile = getOutputMediaFile(MEDIA_TYPE_IMAGE);
-            if (pictureFile == null){
-                return;
-            }
-
-            try {
-                FileOutputStream fos = new FileOutputStream(pictureFile);
-                fos.write(data);
-                fos.close();
-            } catch (FileNotFoundException e) {
-                Log.d(TAG, "File not found: " + e.getMessage());
-            } catch (IOException e) {
-                Log.d(TAG, "Error accessing file: " + e.getMessage());
-            }
-        }
-    };
 }
