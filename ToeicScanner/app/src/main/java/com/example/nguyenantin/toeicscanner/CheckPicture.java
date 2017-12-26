@@ -1,26 +1,19 @@
 package com.example.nguyenantin.toeicscanner;
 
+import android.support.v4.app.FragmentManager;
 import android.content.Intent;
-import android.content.res.AssetManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
-import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOError;
-import java.io.IOException;
-import java.io.InputStream;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -30,22 +23,17 @@ public class CheckPicture extends AppCompatActivity {
     private static CircleImageView btn_cancel;
     private static CircleImageView btn_next;
     private static final String TAG = "CheckPicture";
-
+    private  FragmentManager fm = getSupportFragmentManager();
     char[] arrResultAnswer;
     boolean isProcessed = false;    // check align process
-
+    private LinearLayout hide_nav;
     static{
         OpenCVLoader.initDebug();
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        View decorView = getWindow().getDecorView();
-        int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_FULLSCREEN;
-        decorView.setSystemUiVisibility(uiOptions);
+        hideSystemUI();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_check_picture);
 
@@ -54,10 +42,17 @@ public class CheckPicture extends AppCompatActivity {
         imageView = (ImageView) findViewById(R.id.image_check);
         btn_cancel = (CircleImageView) findViewById(R.id.btn_cancel);
         btn_next = (CircleImageView) findViewById(R.id.btn_next);
+        hide_nav = (LinearLayout) findViewById(R.id.hide_nav);
 
         getExtra();
         getPicture();
 
+        hide_nav.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                hideSystemUI();
+            }
+        });
         btn_next.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -67,9 +62,11 @@ public class CheckPicture extends AppCompatActivity {
                     checkTestIntent.putExtra("arrResultAnswer", arrResultAnswer);
                     CheckPicture.this.startActivity(checkTestIntent);
                 }
-//                else{
-//                    // Show Popup / layout: CANNOT DETECT A TEST OR NOT A TEST
-//                }
+                else{
+                    DFragment alertdFragment = new DFragment();
+                    // Show Alert DialogFragment
+                    alertdFragment.show(fm, "Image wasn't processed. Please, come back take picture!!");
+                }
             }
         });
 
@@ -81,8 +78,23 @@ public class CheckPicture extends AppCompatActivity {
             }
         });
     }
-
-
+    //Create Arlet show check
+    //hide system navigation
+    // This snippet hides the system bars.
+    private void hideSystemUI() {
+        // Set the IMMERSIVE flag.
+        // Set the content to appear under the system bars so that the content
+        // doesn't resize when the system bars hide and show.
+        View decorView = getWindow().getDecorView();
+        decorView.setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+                        | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+                        | View.SYSTEM_UI_FLAG_IMMERSIVE);
+    }
+    ///
     public void getExtra(){
         // get all value from previous activity
         arrResultAnswer = getIntent().getCharArrayExtra("arrResultAnswer");

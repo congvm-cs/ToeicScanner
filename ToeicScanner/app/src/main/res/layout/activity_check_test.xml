@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="#0087C9"
+    android:id="@+id/hide_nav"
     android:weightSum="10"
     tools:context="com.example.nguyenantin.toeicscanner.CheckTest">
     <LinearLayout

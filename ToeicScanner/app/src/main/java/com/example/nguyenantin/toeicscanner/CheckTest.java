@@ -1,16 +1,14 @@
 package com.example.nguyenantin.toeicscanner;
 
-import android.nfc.Tag;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Random;
 
 import android.content.Intent;
@@ -31,6 +29,7 @@ public class CheckTest extends AppCompatActivity {
     private TextView txt_crlisten;
     private TextView txt_total_listen;
     private TextView  txt_sum;
+    private LinearLayout hide_nav;
 
     private int resultdoc = 0;
 
@@ -44,12 +43,7 @@ public class CheckTest extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        View decorView = getWindow().getDecorView();
-        int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_FULLSCREEN;
-
-        decorView.setSystemUiVisibility(uiOptions);
+        hideSystemUI();
         setContentView(R.layout.activity_check_test);
 
         txt_crread = (TextView) findViewById(R.id.txt_crread);
@@ -58,7 +52,15 @@ public class CheckTest extends AppCompatActivity {
         txt_total_listen = (TextView) findViewById(R.id.txt_icrlisten);
         txt_sum = (TextView) findViewById(R.id.txt_sum);
         btn_ok = (Button) findViewById(R.id.btn_ok);
+        hide_nav = (LinearLayout) findViewById(R.id.hide_nav);
 
+        // Activity in component
+        hide_nav.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                hideSystemUI();
+            }
+        });
         btn_ok.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -87,6 +89,23 @@ public class CheckTest extends AppCompatActivity {
                                         standardListeningScore[count_correct_listen]));
     }
 
+    //hide system navigation
+    // This snippet hides the system bars.
+    private void hideSystemUI() {
+        // Set the IMMERSIVE flag.
+        // Set the content to appear under the system bars so that the content
+        // doesn't resize when the system bars hide and show.
+        View decorView = getWindow().getDecorView();
+        decorView.setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+                        | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+                        | View.SYSTEM_UI_FLAG_IMMERSIVE);
+    }
+
+    ///====================================
     private char[] generateAnswerKey(){
 
         Random rand = new Random();

@@ -2,39 +2,18 @@ package com.example.nguyenantin.toeicscanner;
 
 import android.app.Activity;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-
-import android.content.Context;
-import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.hardware.Camera;
-import android.hardware.Camera.PictureCallback;
-import android.hardware.Camera.ShutterCallback;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.View;
-import android.view.WindowManager;
-import android.widget.Button;
-import android.widget.FrameLayout;
-
-import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
-import android.view.MenuItem;
 import android.view.SurfaceView;
-import android.view.WindowManager;
-import android.widget.Toast;
+import android.widget.LinearLayout;
 
 import org.opencv.android.JavaCameraView;
 import org.opencv.android.BaseLoaderCallback;
@@ -44,58 +23,56 @@ import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
-import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.imgproc.Imgproc;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 public class CustomCamera extends Activity implements CvCameraViewListener2 {
 
-    CircleImageView btn_back;
-    CircleImageView captureButton;
+    private CircleImageView btn_back;
+    private CircleImageView captureButton;
 
-    Intent intentView;
     private static final String TAG = "CustomCamera";
     private static AssetManager assetManager;
     // Loads camera view of OpenCV for us to use. This lets us see using OpenCV
     private CameraBridgeViewBase mOpenCvCameraView;
 
     // Used in Camera selection from menu (when implemented)
-    private boolean mIsJavaCamera = true;
-    private MenuItem mItemSwitchCamera = null;
-
+    private LinearLayout hide_nav;
+    // use OpenCv in component
     static{
         OpenCVLoader.initDebug();
     }
+    //
     Intent intentCheckPicture;
-//    Intent intentSubmitIdTest;
 
-    Mat inputImage;
-    Mat processedImage;
-    ToeicScanner scanner;
-    char[] arrResultAnswer;
-    boolean isProcessed = false;    // check align process
+    private Mat inputImage;
+    private Mat processedImage;
+    private ToeicScanner scanner;
+    private char[] arrResultAnswer;
+    private boolean isProcessed = false;    // check align process
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        View decorView = getWindow().getDecorView();
-        int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_FULLSCREEN;
-        decorView.setSystemUiVisibility(uiOptions);
-        super.onCreate(savedInstanceState);
+        hideSystemUI();
 
+        super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_custom_camera);
         LoadTemplate();
-
         // Controller
         captureButton = (CircleImageView)findViewById(R.id.btn_takepicture);
         btn_back = (CircleImageView)findViewById(R.id.btn_back);
-
+        hide_nav = (LinearLayout) findViewById(R.id.hide_nav);
         // Toeic Scanner
         scanner = new ToeicScanner();
 
+        //Activity in component
+        hide_nav.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                hideSystemUI();
+            }
+        });
         captureButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -116,7 +93,22 @@ public class CustomCamera extends Activity implements CvCameraViewListener2 {
         mOpenCvCameraView.setCvCameraViewListener(this);
 
     }
-
+    //hide system navigation
+    // This snippet hides the system bars.
+    private void hideSystemUI() {
+        // Set the IMMERSIVE flag.
+        // Set the content to appear under the system bars so that the content
+        // doesn't resize when the system bars hide and show.
+        View decorView = getWindow().getDecorView();
+        decorView.setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+                        | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+                        | View.SYSTEM_UI_FLAG_IMMERSIVE);
+    }
+    ///
     //    ========================
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override

@@ -1,8 +1,5 @@
 package com.example.nguyenantin.toeicscanner;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 /**
  * Created by nguyenantin on 12/18/17.
  */

@@ -1,16 +1,9 @@
 package com.example.nguyenantin.toeicscanner;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 
 import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
 import android.hardware.Camera;
-import android.hardware.Camera.PreviewCallback;
-import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 

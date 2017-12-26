@@ -6,6 +6,7 @@ android {
         applicationId "com.example.nguyenantin.toeicscanner"
         minSdkVersion 21
         targetSdkVersion 26
+        multiDexEnabled true
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -36,10 +37,10 @@ dependencies {
     compile 'com.squareup.retrofit2:adapter-rxjava:2.1.0'
     compile 'com.squareup.retrofit2:converter-gson:2.1.0'
     compile 'de.hdodenhof:circleimageview:2.2.0'
-    compile project(':circleimageview')
     compile 'io.reactivex:rxjava:1.2.0'
     compile 'com.squareup.retrofit2:adapter-rxjava:2.1.0'
     compile 'io.reactivex:rxandroid:1.2.1'
     compile 'com.loopj.android:android-async-http:1.4.9'
     implementation project(':openCVLibrary330')
+    implementation project(':circleimageview')
 }
