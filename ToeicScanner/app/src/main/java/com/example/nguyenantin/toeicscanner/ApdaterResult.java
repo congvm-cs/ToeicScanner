@@ -2,6 +2,7 @@ package com.example.nguyenantin.toeicscanner;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
 import android.view.ContextMenu;
@@ -19,10 +20,6 @@ import java.util.List;
 import static com.example.nguyenantin.toeicscanner.R.drawable.text;
 import static com.example.nguyenantin.toeicscanner.R.drawable.textincorrect;
 
-/**
- * Created by NguyenBao on 12/25/2016.
- */
-
 public class ApdaterResult extends ArrayAdapter<Result> {
     Activity context;
     int resource;
@@ -37,9 +34,11 @@ public class ApdaterResult extends ArrayAdapter<Result> {
     private static class ViewHolder {
         TextView answer;
     }
+
     public ApdaterResult(Context context, ArrayList<Result> notes) {
         super(context, R.layout.itemt_result, notes);
     }
+
 //    @Override
 //    public View getView(int position, View convertView, ViewGroup parent) {
 //        Result note = getItem(position);
@@ -79,10 +78,14 @@ public class ApdaterResult extends ArrayAdapter<Result> {
         if (Integer.parseInt(txtSTT.getText().toString())>100 && !txtResult.getText().equals(txtResult2.getText().toString())){
             txtResult.setBackgroundResource(R.drawable.textincorrect);
             txtResult2.setBackgroundResource(R.drawable.textincorrect);
+            txtResult2.setTextColor(Color.WHITE);
+            txtResult.setTextColor(Color.WHITE);
 
         } else if(Integer.parseInt(txtSTT.getText().toString())<100 && !txtResult.getText().equals(txtResult2.getText().toString())){
             txtResult.setBackgroundResource(R.drawable.textincorrect);
             txtResult2.setBackgroundResource(R.drawable.textincorrect);
+            txtResult2.setTextColor(Color.WHITE);
+            txtResult.setTextColor(Color.WHITE);
         }
         else if(Integer.parseInt(txtSTT.getText().toString())<100 && txtResult.getText().equals(txtResult2.getText().toString())){
             txtResult.setBackgroundResource(R.drawable.text);

@@ -19,6 +19,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import java.io.IOException;
+import java.util.List;
 
 import retrofit2.adapter.rxjava.HttpException;
 import rx.android.schedulers.AndroidSchedulers;
@@ -33,6 +34,8 @@ public class SubmitIdTest extends AppCompatActivity {
     private EditText edt_submit_id;
     private CompositeSubscription mSubscriptions;
     private SharedPreferences mSharedPreferences;
+
+    List<Character> resultAnswer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,29 +53,36 @@ public class SubmitIdTest extends AppCompatActivity {
         submit_id.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                setError();
 
-                String made = edt_submit_id.getText().toString();
+                Intent intent = new Intent(SubmitIdTest.this, CustomCamera.class);
+                startActivity(intent);
 
-                int err = 0;
 
-                if (!validateMade(made)) {
-
-                    err++;
-                    edt_submit_id.setError("Ma De should be valid !");
-                }
-
-                if (err == 0) {
-
-                    passProcess(made);
-
-                } else {
-
-                    showSnackBarMessage("Enter Valid Details !");
-                }
+                //Server custom class
+//                setError();
+//
+//                String made = edt_submit_id.getText().toString();
+//
+//                int err = 0;
+//
+//                if (!validateMade(made)) {
+//
+//                    err++;
+//                    edt_submit_id.setError("Ma De should be valid !");
+//                }
+//
+//                if (err == 0) {
+//
+//                    passProcess(made);
+//
+//                } else {
+//
+//                    showSnackBarMessage("Enter Valid Details !");
+//                }
             }
         });
     }
+
     private void setError() {
         edt_submit_id.setError(null);
     }
@@ -83,9 +93,8 @@ public class SubmitIdTest extends AppCompatActivity {
                 .subscribeOn(Schedulers.io())
                 .subscribe(this::handleResponse,this::handleError));
     }
+
     private void handleError(Throwable error) {
-
-
         if (error instanceof HttpException) {
 
             Gson gson = new GsonBuilder().create();
@@ -108,9 +117,10 @@ public class SubmitIdTest extends AppCompatActivity {
 
         if (findViewById(R.id.activity_main) != null) {
 
-            Snackbar.make(findViewById(R.id.activity_main),message,Snackbar.LENGTH_SHORT).show();
+            Snackbar.make(findViewById(R.id.activity_main), message, Snackbar.LENGTH_SHORT).show();
         }
     }
+
     private void handleResponse(Response response) {
 
         SharedPreferences.Editor editor = mSharedPreferences.edit();
@@ -122,6 +132,5 @@ public class SubmitIdTest extends AppCompatActivity {
 
         Intent intent = new Intent(SubmitIdTest.this, CustomCamera.class);
         startActivity(intent);
-
     }
 }

@@ -29,17 +29,15 @@ public class CheckPicture extends AppCompatActivity {
     private static ImageView imageView;
     private static CircleImageView btn_cancel;
     private static CircleImageView btn_next;
-    private static final String TAG = "Cuc cong";
-    private static AssetManager assetManager;
-    private static ToeicScanner scanner;
-    private Bitmap temp;
-    private Mat I_temp;
-    private String result;
+    private static final String TAG = "CheckPicture";
+
+    char[] arrResultAnswer;
+    boolean isProcessed = false;    // check align process
+
     static{
         OpenCVLoader.initDebug();
     }
-    private Bitmap photo;
-    //=====================
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
@@ -50,49 +48,60 @@ public class CheckPicture extends AppCompatActivity {
         decorView.setSystemUiVisibility(uiOptions);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_check_picture);
-        Bundle extras = getIntent().getExtras();
-        boolean flag = extras.getBoolean("flag");
-        if(flag==true)
-        {
-            LoadTemplate();
-            imageView = (ImageView) findViewById(R.id.image_check);
-            btn_cancel = (CircleImageView) findViewById(R.id.btn_cancel);
-            btn_next = (CircleImageView) findViewById(R.id.btn_next);
-            getPicture();
 
-            btn_next.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent cameraIntent = new Intent(CheckPicture.this, CheckTest.class);
-                    cameraIntent.putExtra("result", result);
-                    CheckPicture.this.startActivity(cameraIntent);
+        Bundle extras = getIntent().getExtras();
+
+        imageView = (ImageView) findViewById(R.id.image_check);
+        btn_cancel = (CircleImageView) findViewById(R.id.btn_cancel);
+        btn_next = (CircleImageView) findViewById(R.id.btn_next);
+
+        getExtra();
+        getPicture();
+
+        btn_next.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.e(TAG, "btn_next: Clicked");
+                if (isProcessed == true){
+                    Intent checkTestIntent = new Intent(CheckPicture.this, CheckTest.class);
+                    checkTestIntent.putExtra("arrResultAnswer", arrResultAnswer);
+                    CheckPicture.this.startActivity(checkTestIntent);
                 }
-            });
-            btn_cancel.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent cameraIntent = new Intent(CheckPicture.this, CustomCamera.class);
-                    CheckPicture.this.startActivity(cameraIntent);
-                }
-            });
-        }
-        else{
-            Intent cameraIntent = new Intent(CheckPicture.this, CustomCamera.class);
-            cameraIntent.putExtra("flag", flag);
-            CheckPicture.this.startActivity(cameraIntent);
-        }
+//                else{
+//                    // Show Popup / layout: CANNOT DETECT A TEST OR NOT A TEST
+//                }
+            }
+        });
+
+        btn_cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent cameraIntent = new Intent(CheckPicture.this, CustomCamera.class);
+                CheckPicture.this.startActivity(cameraIntent);
+            }
+        });
     }
+
+
+    public void getExtra(){
+        // get all value from previous activity
+        arrResultAnswer = getIntent().getCharArrayExtra("arrResultAnswer");
+        isProcessed = getIntent().getBooleanExtra("isProcessed", false);
+    }
+
     public void getPicture(){
+        Log.e(TAG,"getPicture");
+
         try {
-            Bundle extras = getIntent().getExtras();
-            if(extras == null) {
+            long addr = getIntent().getLongExtra("mat_image", 0);
+            if(addr == 0) {
                 return;
             }
             else {
-                String filename = extras.getString("filename");
-                Bitmap bmp = loadImageFromStorage(filename);
-                photo = bmp;
-                Process();
+                Mat temImg = new Mat(addr);
+                Bitmap bmp = convertMattoBitmap(temImg);
+                imageView.setImageBitmap(bmp);
+                imageView.setScaleType(ImageView.ScaleType.FIT_XY);
             }
             Log.e(TAG,"Da bam chup");
         }
@@ -102,70 +111,12 @@ public class CheckPicture extends AppCompatActivity {
             startActivity(cameraIntent);
         }
     }
-    private Bitmap loadImageFromStorage(String path)
-    {
-        try {
-            File f=new File(path, "profile.jpg");
-            Bitmap b = BitmapFactory.decodeStream(new FileInputStream(f));
-            return b;
-        }
-        catch (FileNotFoundException e)
-        {
-            e.printStackTrace();
-        }
-        return null;
-    }
-    private void LoadTemplate(){
 
-        Log.e(TAG, "Load Template");
-        try {
-            assetManager = getAssets();
-            String filename = "image/templates.jpg";
-            InputStream img = assetManager.open(filename);
-            Bitmap bitmap = BitmapFactory.decodeStream(img);
 
-            Mat I = new Mat(bitmap.getHeight(), bitmap.getWidth(), CvType.CV_8UC1);
-            Utils.bitmapToMat(bitmap, I);
-
-            scanner = new ToeicScanner();
-            scanner.LoadTemplate(I);
-            Log.e(TAG, "Finish");
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-    //
-    public void Process(){
-        try {
-            AssetManager assetManager1;
-            assetManager1 = getAssets();
-            String filename1 = "image/n2.jpg";
-            InputStream img1 = null;
-            img1 = assetManager1.open(filename1);
-            Bitmap bitmap1 = photo;
-            //
-            Mat I1 = new Mat(bitmap1.getHeight(), bitmap1.getWidth(), CvType.CV_8UC3);
-            Utils.bitmapToMat(bitmap1, I1);
-
-            // process image take to camera
-            I_temp = scanner.DetectROI(I1);
-            temp = convertMattoBitmap(I_temp);
-            scanner.AlignProcess();
-            Utils.matToBitmap(I_temp, temp);
-            result = scanner.GetAnswers().toString(); // String result frome array char
-
-            // set background image
-            imageView.setImageBitmap(temp);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
     //Convert bitmap from mat
     public Bitmap convertMattoBitmap(Mat mat) {
         Log.e(TAG, "convertMattoBitmap");
-        Bitmap temp1 = Bitmap.createBitmap(scanner.DetectROI(mat).cols(), scanner.DetectROI(mat).rows(), Bitmap.Config.ARGB_8888);
+        Bitmap temp1 = Bitmap.createBitmap(mat.cols(), mat.rows(), Bitmap.Config.ARGB_8888);
         Utils.matToBitmap(mat, temp1);
         return temp1;
     }

@@ -5,9 +5,14 @@ import android.app.Activity;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
+import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.hardware.Camera;
@@ -23,182 +28,204 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.FrameLayout;
 
+import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+import android.view.MenuItem;
+import android.view.SurfaceView;
+import android.view.WindowManager;
+import android.widget.Toast;
+
+import org.opencv.android.JavaCameraView;
+import org.opencv.android.BaseLoaderCallback;
+import org.opencv.android.CameraBridgeViewBase;
+import org.opencv.android.CameraBridgeViewBase.CvCameraViewFrame;
+import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
+import org.opencv.android.LoaderCallbackInterface;
+import org.opencv.android.OpenCVLoader;
+import org.opencv.android.Utils;
+import org.opencv.core.Core;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
+import org.opencv.imgproc.Imgproc;
 import de.hdodenhof.circleimageview.CircleImageView;
 
-public class CustomCamera extends Activity {
+public class CustomCamera extends Activity implements CvCameraViewListener2 {
 
-    CircleImageView btnTake;
-    CircleImageView btn_checkresult;
     CircleImageView btn_back;
-    char [] cvchar;
     CircleImageView captureButton;
 
     Intent intentView;
-    private static final String TAG = "CameraDemo";
-    private Camera mCamera;
-    boolean flag =false;
-    byte [] image;
-    private CameraPreview mPreview;
-    Bitmap tempbitmap;
-    public static final int MEDIA_TYPE_IMAGE = 1;
+    private static final String TAG = "CustomCamera";
+    private static AssetManager assetManager;
+    // Loads camera view of OpenCV for us to use. This lets us see using OpenCV
+    private CameraBridgeViewBase mOpenCvCameraView;
 
+    // Used in Camera selection from menu (when implemented)
+    private boolean mIsJavaCamera = true;
+    private MenuItem mItemSwitchCamera = null;
+
+    static{
+        OpenCVLoader.initDebug();
+    }
+    Intent intentCheckPicture;
+//    Intent intentSubmitIdTest;
+
+    Mat inputImage;
+    Mat processedImage;
+    ToeicScanner scanner;
+    char[] arrResultAnswer;
+    boolean isProcessed = false;    // check align process
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         View decorView = getWindow().getDecorView();
-        int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_FULLSCREEN;
+        int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_FULLSCREEN;
         decorView.setSystemUiVisibility(uiOptions);
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_custom_camera);
-        if(flag==false) {
-            // Create an instance of Camera
-            mCamera = getCameraInstance();
+        LoadTemplate();
 
-            // Create our Preview view and set it as the content of our activity.
-            mPreview = new CameraPreview(this, mCamera);
-            FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
-            // Add a listener to the Capture button
-            captureButton = (CircleImageView) findViewById(R.id.btn_takepicture);
+        // Controller
+        captureButton = (CircleImageView)findViewById(R.id.btn_takepicture);
+        btn_back = (CircleImageView)findViewById(R.id.btn_back);
 
-            captureButton.setOnClickListener(
-                    new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            // get an image from the camera
-                            Log.e(TAG, "takePicture");
-                            mCamera.takePicture(null, null, mPicture);
-                            Log.e(TAG, "takePicture done");
-                            return;
-                        }
-                    }
-            );
-//
-            preview.addView(mPreview);
-        }
-        else{
-            Intent intent = new Intent(CustomCamera.this,CustomCamera.class);
-            startActivity(intent);
-        }
-    }
+        // Toeic Scanner
+        scanner = new ToeicScanner();
 
-    /** A safe way to get an instance of the Camera object. */
-    public static Camera getCameraInstance(){
-        Camera c = null;
-        try {
-            c = Camera.open(); // attempt to get a Camera instance
-        }
-        catch (Exception e){
-            // Camera is not available (in use or does not exist)
-        }
-        return c; // returns null if camera is unavailable
-    }
-    ShutterCallback shutterCallback = new ShutterCallback() {
-        public void onShutter() {
-            Log.d(TAG, "onShutter'd");
-        }
-    };
-    /** Create a file Uri for saving an image or video */
-    private static Uri getOutputMediaFileUri(int type){
-        return Uri.fromFile(getOutputMediaFile(type));
-    }
-
-    /** Create a File for saving an image or video */
-    private static File getOutputMediaFile(int type){
-        // To be safe, you should check that the SDCard is mounted
-        // using Environment.getExternalStorageState() before doing this.
-
-        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES), "ToiecScanner");
-        // This location works best if you want the created images to be shared
-        // between applications and persist after your app has been uninstalled.
-
-        // Create the storage directory if it does not exist
-        if (! mediaStorageDir.exists()){
-            if (! mediaStorageDir.mkdirs()){
-                Log.d("ToiecScanner", "failed to create directory");
-                return null;
+        captureButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ButtonProcess();
             }
-        }
+        });
+        btn_back.setOnClickListener(new View.OnClickListener(){
 
-        // Create a media file name
-        String timeStamp = "newsky";
-        File mediaFile;
-        if (type == MEDIA_TYPE_IMAGE){
-            mediaFile = new File(mediaStorageDir.getPath() + File.separator + timeStamp + ".jpg");
-        } else {
-            return null;
-        }
-
-        return mediaFile;
-    }
-    private String saveToInternalStorage(Bitmap bitmapImage){
-        ContextWrapper cw = new ContextWrapper(getApplicationContext());
-        File directory = cw.getDir("ToiecScanner", Context.MODE_PRIVATE);
-        // Create imageDir
-        File mypath=new File(directory,"profile.jpg");
-        FileOutputStream fos = null;
-        try {
-            fos = new FileOutputStream(mypath);
-            // Use the compress method on the BitMap object to write image to the OutputStream
-            bitmapImage.compress(Bitmap.CompressFormat.PNG, 10000, fos);
-            Log.e(TAG,"da chay qua file output");
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                fos.close();
-            } catch (IOException e) {
-                e.printStackTrace();
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(CustomCamera.this,SubmitIdTest.class);
+                startActivity(intent);
             }
-        }
-        Log.e(TAG,"da chay xong load anh");
-        return directory.getAbsolutePath();
-    }
-    private PictureCallback mPicture = new PictureCallback() {
+        });
+        // TO DO
+        mOpenCvCameraView = (JavaCameraView) findViewById(R.id.camera_preview);
+        mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
+        mOpenCvCameraView.setCvCameraViewListener(this);
 
+    }
+
+    //    ========================
+    private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
-        public void onPictureTaken(byte[] data, Camera camera) {
-            Log.e(TAG, "Show now1");
-            String filename;
-            if (data == null) {
-                Log.e(TAG, "Show now2");
-                return;
-            } else {
-                Log.e(TAG, "Show now3");
-                image = data;
-                tempbitmap = convertBitmapfrombyte(data);
-                filename = saveToInternalStorage(tempbitmap);
-            }
-
-            Log.e(TAG, "Show done: " + filename);
-
-            intentView = new Intent(CustomCamera.this, CheckPicture.class);
-
-            if (image == null) {
-                Log.e(TAG, "image null");
-            } else {
-                //Bitmap abc = convertBitmapfrombyte(data);
-                //
-//                Bundle bundle = new Bundle();
-//              String sendString = convertByteArrayToString(data);
-                intentView = intentView.putExtra("filename",filename);
-                flag=true;
-                intentView = intentView.putExtra("flag",flag);
-//                intentView.putExtra(bundle);
-                //
-                //intentView.putExtra("1", abc);
-                startActivity(intentView);
-
-                Log.e(TAG, "Transfer done");
+        public void onManagerConnected(int status) {
+            switch (status) {
+                case LoaderCallbackInterface.SUCCESS:
+                {
+                    Log.i(TAG, "OpenCV loaded successfully");
+                    mOpenCvCameraView.enableView();
+                } break;
+                default:
+                {
+                    super.onManagerConnected(status);
+                } break;
             }
         }
     };
-    public Bitmap convertBitmapfrombyte(byte [] data) {
-        Log.e(TAG, "Successful convertion to bitmap");
-        Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
-        return bitmap;
+
+    @Override
+    public void onCameraViewStarted(int width, int height) {
+        inputImage = new Mat(height, width, CvType.CV_8UC4);
+    }
+
+    @Override
+    public void onCameraViewStopped() {
+        inputImage.release();
+    }
+
+    @Override
+    public Mat onCameraFrame(CvCameraViewFrame inputFrame) {
+        // TODO Auto-generated method stub
+        inputImage = inputFrame.rgba();
+        return inputImage; // This function must return
+    }
+
+    @Override
+    public void onPause()
+    {
+        super.onPause();
+        if (mOpenCvCameraView != null)
+            mOpenCvCameraView.disableView();
+    }
+
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+        if (!OpenCVLoader.initDebug()) {
+            Log.d(TAG, "Internal OpenCV library not found. Using OpenCV Manager for initialization");
+            OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_0_0, this, mLoaderCallback);
+        } else {
+            Log.d(TAG, "OpenCV library found inside package. Using it!");
+            mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
+        }
+    }
+
+    public void onDestroy() {
+        super.onDestroy();
+        if (mOpenCvCameraView != null)
+            mOpenCvCameraView.disableView();
+    }
+
+
+    public void ButtonProcess(){
+        Log.e(TAG,"captureButton: Click");
+        processedImage = Process(inputImage);
+        // send processed Image, isProcessed, resultAnswer
+        intentCheckPicture = new Intent(CustomCamera.this, CheckPicture.class);
+
+        long Mat_Image = processedImage.getNativeObjAddr();
+
+        intentCheckPicture.putExtra("mat_image", Mat_Image);
+        intentCheckPicture.putExtra("arrResultAnswer", arrResultAnswer);
+        intentCheckPicture.putExtra("isProcessed", isProcessed);
+
+        Log.e(TAG,"captureButton: Done");
+        startActivity(intentCheckPicture);
+    }
+
+    public Mat Process(Mat img){
+        Mat I_temp = new Mat();
+        // process image take to camera
+        I_temp = scanner.DetectROI(img);
+        Log.e(TAG, "GetSquare " + scanner.GetSquare().toString());
+        isProcessed = scanner.AlignProcess();
+
+        Log.e(TAG, "isProcessed " + isProcessed);
+
+        arrResultAnswer = scanner.GetAnswers().toString().toCharArray(); // String result frome array char
+        Log.e(TAG, "resultAnswer " + arrResultAnswer);
+        return I_temp;
+    }
+
+    private void LoadTemplate(){
+        Log.e(TAG, "Load Template");
+        try {
+            assetManager = getAssets();
+            String filename = "image/templates.jpg";
+            InputStream img = assetManager.open(filename);
+            Bitmap bitmap = BitmapFactory.decodeStream(img);
+            Mat I = new Mat(bitmap.getHeight(), bitmap.getWidth(), CvType.CV_8UC1);
+            Utils.bitmapToMat(bitmap, I);
+
+            scanner = new ToeicScanner();
+            scanner.LoadTemplate(I);
+            Log.e(TAG, "Finish");
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

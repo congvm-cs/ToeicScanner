@@ -2,12 +2,29 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.nguyenantin.toeicscanner">
 
-    <uses-permission android:name="android.permission.CAMERA" />
-    <uses-feature android:name="android.hardware.camera" />
-    <uses-feature android:name="android.hardware.camera.autofocus" />
+    <!--Camera-->
+    <!--<uses-permission android:name="android.permission.CAMERA" />-->
+    <!--<uses-feature android:name="android.hardware.camera" />-->
+    <!--<uses-feature android:name="android.hardware.camera.autofocus" />-->
+    <!--<uses-permission android:name="android.permission.CAMERA"/>-->
+    <uses-feature android:name="android.hardware.camera" android:required="false"/>
+    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false"/>
+    <uses-feature android:name="android.hardware.camera.front" android:required="false"/>
+    <uses-feature android:name="android.hardware.camera.front.autofocus" android:required="false"/>
+
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
+
+    <!--OpenCV camera config-->
+    <supports-screens android:resizeable="true"
+        android:smallScreens="true"
+        android:normalScreens="true"
+        android:largeScreens="true"
+        android:anyDensity="true" />
+
+
+    <!--App config-->
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -16,7 +33,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".CustomCamera"
+            android:name=".Loading"
             android:screenOrientation="landscape">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -28,12 +45,12 @@
             android:name=".CheckPicture"
             android:screenOrientation="landscape" />
         <activity
-            android:name=".Loading"
+            android:name=".SubmitIdTest"
             android:screenOrientation="landscape" />
         <activity
             android:name=".CheckTest"
             android:screenOrientation="landscape" />
-        <activity android:name=".SubmitIdTest"
+        <activity android:name=".CustomCamera"
             android:screenOrientation="landscape"></activity>
     </application>
 

@@ -48,14 +48,14 @@ public class ToeicScanner {
     Mat resultAlign = new Mat();
     //============================================================================================//
 
+    public List<MatOfPoint> GetSquare() {return this.squares;}
     public List<Character> GetAnswers(){
         return this.answers;
     };
 
-    public String AlignProcess() {
+    public boolean AlignProcess() {
         try {
             resultAlign = this.Align(this.drawRoiImage);
-
             resultAlign = this.DrawVerticalGrid(resultAlign, true);
             resultAlign = this.DrawHorizontalGrid(resultAlign, true);
 
@@ -63,16 +63,14 @@ public class ToeicScanner {
             resultAlign = this.DrawCircle(resultAlign);
         }
         catch(Exception e) {
-            return "False";
+            return false;
         }
-        return "True";
+        return true;
     }
 
     public Mat DetectROI(Mat img){
         this.LoadInputImage(img);
-
         this.drawRoiImage = this.Preprocess(this.inputImage);
-        Log.e("Cong sida","Hot ga");
         result = this.Detect(this.drawRoiImage);
         return result;
     };
@@ -146,7 +144,6 @@ public class ToeicScanner {
         {
             approx.convertTo(this.approxf1, CvType.CV_32S);
             this.squares.add(this.approxf1);
-            System.out.println(this.squares);
         }
 
         Imgproc.polylines(this.colorInputImage, this.squares, true, new Scalar(0, 255, 0), 4);
