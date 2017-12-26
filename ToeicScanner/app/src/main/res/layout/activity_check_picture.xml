@@ -9,48 +9,52 @@
     tools:context="com.example.nguyenantin.toeicscanner.CheckPicture">
     <ImageView
         android:id="@+id/image_check"
-        android:layout_weight="2"
+        android:layout_weight="1.5"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="10"
+        android:layout_weight="10.5"
         android:background="#01619B"
         android:orientation="vertical"
         android:weightSum="12">
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_weight="6"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:background="@drawable/circle"
             android:layout_height="match_parent">
-            <Button
+            <de.hdodenhof.circleimageview.CircleImageView
                 android:id="@+id/btn_next"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginTop="60dp"
-                android:layout_marginRight="20dp"
-                android:layout_marginBottom="60dp"
-                android:layout_marginLeft="20dp"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                android:layout_width="96dp"
+                android:layout_height="96dp"
+                android:src="@drawable/stickv"
+                app:civ_border_width="2dp"
+                app:civ_border_color="#01619B"
                 android:layout_gravity="center"
-                android:gravity="center"
-                android:background="@drawable/stickv"/>
+                android:layout_weight="1"
+                android:gravity="center"/>
         </LinearLayout>
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_weight="6"
-            android:layout_height="match_parent">
-            <Button
+            android:layout_height="match_parent"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_weight="6">
+            <de.hdodenhof.circleimageview.CircleImageView
                 android:id="@+id/btn_cancel"
-                android:layout_marginTop="60dp"
-                android:layout_marginRight="20dp"
-                android:layout_marginBottom="60dp"
-                android:layout_marginLeft="20dp"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                android:layout_width="96dp"
+                android:layout_height="96dp"
+                android:src="@drawable/stickx"
+                app:civ_border_width="2dp"
+                app:civ_border_color="#01619B"
                 android:layout_gravity="center"
-                android:layout_weight="6"
-            android:background="@drawable/stickx"/>
+                android:layout_weight="1"
+                android:gravity="center" />
         </LinearLayout>
     </LinearLayout>
 </LinearLayout>

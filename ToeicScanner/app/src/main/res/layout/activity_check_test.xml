@@ -54,7 +54,7 @@
                                 android:layout_height="match_parent">
                                 <LinearLayout
                                     android:layout_width="match_parent"
-                                    android:layout_weight="5"
+                                    android:layout_weight="4.5"
                                     android:background="#2AD4FF"
                                     android:weightSum="2"
                                     android:orientation="horizontal"
@@ -62,31 +62,31 @@
                                     <TextView
                                         android:layout_width="match_parent"
                                         android:layout_height="match_parent"
-                                        android:textSize="18dp"
+                                        android:textSize="16dp"
                                         android:textStyle="bold"
                                         android:gravity="center"
                                         android:textColor="#0044AA"
-                                        android:text="Câu"
-                                        android:layout_weight="3.5"/>
+                                        android:text="Question"
+                                        android:layout_weight="1"/>
                                 </LinearLayout>
                                 <TextView
                                     android:layout_width="match_parent"
                                     android:layout_height="match_parent"
-                                    android:textSize="18dp"
+                                    android:textSize="16dp"
                                     android:textStyle="bold"
                                     android:gravity="center"
                                     android:textColor="#0044AA"
-                                    android:text="Câu trả lời"
-                                    android:layout_weight="3.5"/>
+                                    android:text="User Answer"
+                                    android:layout_weight="3.75"/>
                                 <TextView
                                     android:layout_width="match_parent"
                                     android:layout_height="match_parent"
-                                    android:textSize="18dp"
+                                    android:textSize="16dp"
                                     android:textColor="#0044AA"
                                     android:textStyle="bold"
                                     android:gravity="center"
-                                    android:text="Đáp án"
-                                    android:layout_weight="3.5"/>
+                                    android:text="Answer Key"
+                                    android:layout_weight="3.75"/>
                             </LinearLayout>
                             <LinearLayout
                                 android:layout_width="match_parent"
@@ -130,12 +130,12 @@
                                     android:layout_height="match_parent"
                                     android:layout_weight="1"
                                     android:textStyle="bold"
-                                    android:textSize="18dp"
+                                    android:textSize="16dp"
                                     android:gravity="center"
                                     android:textColor="#0044AA"
                                     android:textAlignment="center"
                                     android:background="#2AD4FF"
-                                    android:text="Phần nghe" />
+                                    android:text="Listening" />
                             </LinearLayout>
                             <LinearLayout
                                 android:layout_width="match_parent"
@@ -145,33 +145,38 @@
                                 android:layout_gravity="center"
                                 android:background="@android:color/white"
                                 android:orientation="horizontal">
+
                                 <LinearLayout
                                     android:layout_width="match_parent"
                                     android:layout_height="match_parent"
-                                    android:layout_weight="2"
-                                    android:layout_marginLeft="20dp"
                                     android:layout_gravity="center"
+                                    android:layout_marginLeft="10dp"
+                                    android:layout_weight="2"
                                     android:orientation="vertical">
+
                                     <TextView
                                         android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
                                         android:layout_weight="1"
-                                        android:gravity="center"
-                                        android:textSize="15dp"
-                                        android:textStyle="bold"
-                                        android:text="Số câu đúng"
-                                        android:textAlignment="viewStart"
                                         android:background="@drawable/text"
-                                        android:layout_height="match_parent" />
+                                        android:gravity="center"
+                                        android:text="Correct"
+                                        android:textAlignment="viewStart"
+                                        android:textColor="@android:color/holo_blue_dark"
+                                        android:textSize="15dp"
+                                        android:textStyle="bold" />
+
                                     <TextView
                                         android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
                                         android:layout_weight="1"
-                                        android:text="Số câu sai"
-                                        android:gravity="center"
-                                        android:textAlignment="viewStart"
-                                        android:textStyle="bold"
-                                        android:textSize="15dp"
                                         android:background="@drawable/text"
-                                        android:layout_height="match_parent" />
+                                        android:gravity="center"
+                                        android:text="Wrong"
+                                        android:textAlignment="viewStart"
+                                        android:textColor="@android:color/holo_blue_dark"
+                                        android:textSize="16dp"
+                                        android:textStyle="bold" />
                                 </LinearLayout>
                                 <LinearLayout
                                     android:layout_width="match_parent"
@@ -181,6 +186,7 @@
                                     android:layout_gravity="center"
                                     android:orientation="vertical">
                                     <TextView
+                                        android:textColor="@android:color/holo_blue_dark"
                                         android:layout_width="match_parent"
                                         android:id="@+id/txt_crlisten"
                                         android:layout_weight="1"
@@ -197,6 +203,7 @@
                                         android:textStyle="bold"
                                         android:text="0"
                                         android:textSize="15dp"
+                                        android:textColor="@android:color/holo_blue_dark"
                                         android:layout_weight="1"
                                         android:background="@android:color/white"
                                         android:layout_height="match_parent" />
@@ -224,11 +231,11 @@
                                     android:textStyle="bold"
                                     android:ems="10"
                                     android:gravity="center"
-                                    android:textSize="18dp"
+                                    android:textSize="16dp"
                                     android:textColor="#0044AA"
                                     android:textAlignment="center"
                                     android:background="#2AD4FF"
-                                    android:text="Phần đọc" />
+                                    android:text="Reading" />
                             </LinearLayout>
                             <LinearLayout
                                 android:layout_width="match_parent"
@@ -242,15 +249,16 @@
                                     android:layout_width="match_parent"
                                     android:layout_height="match_parent"
                                     android:layout_weight="2"
-                                    android:layout_marginLeft="20dp"
+                                    android:layout_marginLeft="10dp"
                                     android:layout_gravity="center"
                                     android:orientation="vertical">
                                     <TextView
                                         android:layout_width="match_parent"
                                         android:layout_weight="1"
-                                        android:text="Số câu đúng"
+                                        android:text="Correct"
                                         android:gravity="center"
-                                        android:textSize="15dp"
+                                        android:textSize="16dp"
+                                        android:textColor="@android:color/holo_blue_dark"
                                         android:textStyle="bold"
                                         android:textAlignment="viewStart"
                                         android:background="@drawable/text"
@@ -259,8 +267,9 @@
                                         android:layout_width="match_parent"
                                         android:gravity="center"
                                         android:textStyle="bold"
-                                        android:text="Số câu sai"
-                                        android:textSize="15dp"
+                                        android:text="Wrong"
+                                        android:textSize="16dp"
+                                        android:textColor="@android:color/holo_blue_dark"
                                         android:textAlignment="viewStart"
                                         android:layout_weight="1"
                                         android:background="@drawable/text"
@@ -282,6 +291,7 @@
                                         android:gravity="center"
                                         android:textStyle="bold"
                                         android:textSize="15dp"
+                                        android:textColor="@android:color/holo_blue_dark"
                                         android:background="@android:color/white"
                                         android:layout_height="match_parent" />
                                     <TextView
@@ -292,6 +302,7 @@
                                         android:id="@+id/txt_icrread"
                                         android:textSize="15dp"
                                         android:layout_weight="1"
+                                        android:textColor="@android:color/holo_blue_dark"
                                         android:background="@android:color/white"
                                         android:layout_height="match_parent" />
                                 </LinearLayout>
@@ -308,12 +319,12 @@
                                 android:layout_height="match_parent"
                                 android:layout_weight="2"
                                 android:textStyle="bold"
-                                android:textSize="18dp"
+                                android:textSize="16dp"
                                 android:gravity="center"
                                 android:textColor="#0044AA"
                                 android:textAlignment="center"
                                 android:background="#2AD4FF"
-                                android:text="Tổng điểm"  />
+                                android:text="Total Score"  />
                             <TextView
                                 android:layout_width="match_parent"
                                 android:gravity="center"
@@ -346,7 +357,7 @@
             android:layout_marginLeft="160dp"
             android:layout_gravity="center"
             android:layout_marginRight="160dp"
-            android:layout_marginBottom="10dp"
+            android:layout_marginBottom="15dp"
             android:textColor="@android:color/white"
             android:background="@drawable/button"
             android:textSize="20dp"

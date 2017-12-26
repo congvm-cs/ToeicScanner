@@ -4,13 +4,11 @@ import android.content.Intent;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.ImageView;
 
 import org.opencv.android.OpenCVLoader;
@@ -19,28 +17,28 @@ import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.FileNotFoundException;
 import java.io.IOError;
 import java.io.IOException;
 import java.io.InputStream;
 
+import de.hdodenhof.circleimageview.CircleImageView;
+
 public class CheckPicture extends AppCompatActivity {
 
-    ImageView imageView;
-    Button btn_cancel;
-    Button btn_next;
-    private static final int CAMERA_REQUEST = 3200;
+    private static ImageView imageView;
+    private static CircleImageView btn_cancel;
+    private static CircleImageView btn_next;
     private static final String TAG = "Cuc cong";
     private static AssetManager assetManager;
     private static ToeicScanner scanner;
-    boolean flag =true;
-    Bitmap temp;
-    Mat I_temp;
-    String result;
+    private Bitmap temp;
+    private Mat I_temp;
+    private String result;
     static{
         OpenCVLoader.initDebug();
     }
-    Bitmap photo;
+    private Bitmap photo;
     //=====================
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,38 +50,50 @@ public class CheckPicture extends AppCompatActivity {
         decorView.setSystemUiVisibility(uiOptions);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_check_picture);
-        LoadTemplate();
-        takeAPicture();
-        if(flag) {
-            XuLy();
+        Bundle extras = getIntent().getExtras();
+        boolean flag = extras.getBoolean("flag");
+        if(flag==true)
+        {
+            LoadTemplate();
+            imageView = (ImageView) findViewById(R.id.image_check);
+            btn_cancel = (CircleImageView) findViewById(R.id.btn_cancel);
+            btn_next = (CircleImageView) findViewById(R.id.btn_next);
+            getPicture();
+
+            btn_next.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent cameraIntent = new Intent(CheckPicture.this, CheckTest.class);
+                    cameraIntent.putExtra("result", result);
+                    CheckPicture.this.startActivity(cameraIntent);
+                }
+            });
+            btn_cancel.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent cameraIntent = new Intent(CheckPicture.this, CustomCamera.class);
+                    CheckPicture.this.startActivity(cameraIntent);
+                }
+            });
         }
-        imageView = (ImageView) findViewById(R.id.image_check);
-
-        btn_cancel = (Button)findViewById(R.id.btn_cancel);
-        btn_next = (Button) findViewById(R.id.btn_next);
-
-
-        btn_next.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent cameraIntent = new Intent(CheckPicture.this, CheckTest.class);
-                cameraIntent.putExtra("result",result);
-                CheckPicture.this.startActivity(cameraIntent);
-            }
-        });
-        btn_cancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-                startActivityForResult(cameraIntent, CAMERA_REQUEST);
-            }
-        });
+        else{
+            Intent cameraIntent = new Intent(CheckPicture.this, CustomCamera.class);
+            cameraIntent.putExtra("flag", flag);
+            CheckPicture.this.startActivity(cameraIntent);
+        }
     }
-    public void takeAPicture(){
+    public void getPicture(){
         try {
-            flag = false;
-            Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-            startActivityForResult(cameraIntent, CAMERA_REQUEST);
+            Bundle extras = getIntent().getExtras();
+            if(extras == null) {
+                return;
+            }
+            else {
+                String filename = extras.getString("filename");
+                Bitmap bmp = loadImageFromStorage(filename);
+                photo = bmp;
+                Process();
+            }
             Log.e(TAG,"Da bam chup");
         }
         catch (IOError e)
@@ -92,7 +102,20 @@ public class CheckPicture extends AppCompatActivity {
             startActivity(cameraIntent);
         }
     }
-    public void LoadTemplate(){
+    private Bitmap loadImageFromStorage(String path)
+    {
+        try {
+            File f=new File(path, "profile.jpg");
+            Bitmap b = BitmapFactory.decodeStream(new FileInputStream(f));
+            return b;
+        }
+        catch (FileNotFoundException e)
+        {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    private void LoadTemplate(){
 
         Log.e(TAG, "Load Template");
         try {
@@ -106,42 +129,44 @@ public class CheckPicture extends AppCompatActivity {
 
             scanner = new ToeicScanner();
             scanner.LoadTemplate(I);
+            Log.e(TAG, "Finish");
 
         } catch (IOException e) {
             e.printStackTrace();
-        };
-
+        }
     }
-    public void XuLy(){
-        Log.e(TAG, "xu ly");
-        Bitmap bitmap1 = photo;
-        //
-        Mat I1 = new Mat(bitmap1.getHeight(), bitmap1.getWidth(), CvType.CV_8UC3);
-        Utils.bitmapToMat(bitmap1, I1);
+    //
+    public void Process(){
+        try {
+            AssetManager assetManager1;
+            assetManager1 = getAssets();
+            String filename1 = "image/n2.jpg";
+            InputStream img1 = null;
+            img1 = assetManager1.open(filename1);
+            Bitmap bitmap1 = photo;
+            //
+            Mat I1 = new Mat(bitmap1.getHeight(), bitmap1.getWidth(), CvType.CV_8UC3);
+            Utils.bitmapToMat(bitmap1, I1);
 
-        Log.e(TAG, "DetectROI");
-        I_temp = scanner.DetectROI(I1);
-        temp = convertMattoBitmap(I_temp);
-        Log.e(TAG, "DetectROI done");
-//                Log.e(TAG,String.valueOf(I_temp.size()));
-//        Log.e(TAG, "dm Tin" + String.valueOf(I_temp.size()));
-//        scanner.AlignProcess();
-//                //                    scanner.GetAnswers().toString();
-//        temp = Bitmap.createBitmap(scanner.DetectROI(I_temp).cols(),scanner.DetectROI(I_temp).rows(),Bitmap.Config.ARGB_8888);
-//        Utils.matToBitmap(I_temp, temp);
-//        result = scanner.GetAnswers().toString();
+            // process image take to camera
+            I_temp = scanner.DetectROI(I1);
+            temp = convertMattoBitmap(I_temp);
+            scanner.AlignProcess();
+            Utils.matToBitmap(I_temp, temp);
+            result = scanner.GetAnswers().toString(); // String result frome array char
+
+            // set background image
+            imageView.setImageBitmap(temp);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
+    //Convert bitmap from mat
     public Bitmap convertMattoBitmap(Mat mat) {
         Log.e(TAG, "convertMattoBitmap");
         Bitmap temp1 = Bitmap.createBitmap(scanner.DetectROI(mat).cols(), scanner.DetectROI(mat).rows(), Bitmap.Config.ARGB_8888);
         Utils.matToBitmap(mat, temp1);
         return temp1;
-    }
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == CAMERA_REQUEST) {
-            photo = (Bitmap) data.getExtras().get("data");
-            XuLy();
-            imageView.setImageBitmap(temp);
-        }
     }
 }

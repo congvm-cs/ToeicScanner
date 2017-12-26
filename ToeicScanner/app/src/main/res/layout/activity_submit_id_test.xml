@@ -27,8 +27,8 @@
                 android:layout_gravity="center"
                 android:layout_marginBottom="20dp"
                 android:layout_weight="1"
-                android:layout_marginLeft="150dp"
-                android:layout_marginRight="150dp"
+                android:layout_marginLeft="180dp"
+                android:layout_marginRight="180dp"
                 android:layout_marginTop="20dp"
                 android:background="@drawable/logo"
                 android:layout_height="match_parent" />
@@ -42,15 +42,17 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_weight="5"
-        android:layout_gravity="top"
+        android:layout_gravity="center"
         android:gravity="center"
         android:layout_height="match_parent">
         <EditText
             android:background="@drawable/text"
             android:layout_width="match_parent"
             android:layout_weight="1"
-            android:layout_marginRight="140dp"
-            android:layout_marginLeft="140dp"
+            android:textSize="16dp"
+            android:layout_marginLeft="120dp"
+            android:layout_marginRight="120dp"
+            android:id="@+id/edt_submit_id"
             android:textColorHint="@android:color/holo_blue_dark"
             android:textAlignment="center"
             android:hint="Nhập vào mã đề..."
@@ -59,21 +61,60 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_weight="4"
+        android:weightSum="12"
         android:layout_gravity="center"
         android:gravity="top"
+        android:orientation="vertical"
         android:layout_height="match_parent">
-        <Button
-            android:id="@+id/submit_id"
-            android:layout_marginTop="20dp"
-            android:layout_marginBottom="40dp"
-            android:layout_marginRight="160dp"
-            android:layout_marginLeft="160dp"
-            android:textStyle="bold"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_weight="1"
-            android:textColor="@android:color/white"
-            android:background="@drawable/button"
-            android:text="OK"
-            android:layout_height="match_parent" />
+            android:layout_weight="3"
+            android:weightSum="12"
+            android:layout_gravity="center"
+            android:gravity="top"
+            android:orientation="vertical"
+            android:layout_height="match_parent">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_weight="4"
+                android:weightSum="12"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:layout_marginBottom="10dp"
+                android:layout_marginTop="20dp"
+                android:orientation="vertical"
+                android:layout_height="match_parent">
+                <Button
+                    android:id="@+id/submit_id"
+                    android:textStyle="bold"
+                    android:gravity="center"
+                    android:layout_width="180dp"
+                    android:layout_weight="1"
+                    android:textColor="@android:color/white"
+                    android:background="@drawable/button"
+                    android:text="OK"
+                    android:layout_height="60dp" />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_weight="9"
+                android:weightSum="12"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:layout_height="match_parent">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_weight="1"
+                    android:layout_marginRight="140dp"
+                    android:gravity="bottom"
+                    android:layout_marginLeft="140dp"
+                    android:textSize="12dp"
+                    android:textColor="@android:color/white"
+                    android:textAlignment="center"
+                    android:text="Copyright by Tronjans Team"
+                    android:layout_height="match_parent" />
+            </LinearLayout>
+        </LinearLayout>
     </LinearLayout>
 </LinearLayout>

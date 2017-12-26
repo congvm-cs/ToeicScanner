@@ -2,101 +2,58 @@ package com.example.nguyenantin.toeicscanner;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
-//import android.widget.ImageView;
 import android.widget.ListView;
 
 import java.util.ArrayList;
 import android.content.Intent;
 import android.widget.TextView;
 
-//import com.loopj.android.http.JsonHttpResponseHandler;
-//
-//import org.json.JSONArray;
-//import org.json.JSONException;
-//
-//import java.util.List;
-//
-//import cz.msebera.android.httpclient.Header;
-//import cz.msebera.android.httpclient.message.BasicHeader;
-
 public class CheckTest extends AppCompatActivity {
 
-    ListView lvResult;
-    Button btn_ok;
-    ArrayList<Result> dsResult;
-    ApdaterResult adapterResult;
-    public int resultnghe = 0;
+    private ListView lvResult;
+    private Button btn_ok;
+    private ArrayList<Result> dsResult;
+    private ApdaterResult adapterResult;
     int crread = 0;
-    int crlisten = 0;
-    TextView txt_crread;
-    TextView txt_icrread;
-    TextView txt_crlisten;
-    TextView txt_icrlisten;
-    public int resultdoc = 0;
-    public static  String TAG = "dm Cong";
+    private TextView txt_crread;
+    private TextView txt_icrread;
+    private TextView txt_crlisten;
+    private TextView txt_icrlisten;
+    private int resultdoc = 0;
+    private static  String TAG = "Results :";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        View decorView = getWindow().getDecorView();
+        int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_FULLSCREEN;
+        decorView.setSystemUiVisibility(uiOptions);
         setContentView(R.layout.activity_check_test);
 
-        Intent intent = getIntent();
-        String easyPuzzle = intent.getExtras().getString("result");
         txt_crread = (TextView) findViewById(R.id.txt_crread);
         btn_ok = (Button) findViewById(R.id.btn_ok);
         btn_ok.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intentMain = new Intent( CheckTest.this, CheckPicture.class);
+                Intent intentMain = new Intent( CheckTest.this, CustomCamera.class);
                 CheckTest.this.startActivity(intentMain);
             }
         });
-        Log.e(TAG,"ABC");
+
         lvResult = (ListView) findViewById(R.id.ls_result);
         dsResult=new ArrayList<>();
         adapterResult=new ApdaterResult(CheckTest.this,R.layout.itemt_result,dsResult);
         lvResult.setAdapter(adapterResult);
-        String [] str = null;
-        for(int i = 0 ; i<adapterResult.getCount();i++){
-           if(adapterResult.getItem(i).getResult2().equals(adapterResult.getItem(i).getResult())){
-               crread = crread +1;
-               Log.e(TAG,String.valueOf(crread));
-           }
-        }
         txt_crread.setText(String.valueOf(crread));
         danhsachKetQua();
-//        getResults();
     }
 
-//    private void getResults() {
-//        List<Header> headers = new ArrayList<Header>();
-//        headers.add(new BasicHeader("Accept", "application/json"));
-//
-//        ResultRestClient.get(CheckTest.this, "api/notes", headers.toArray(new Header[headers.size()]),
-//                null, new JsonHttpResponseHandler() {
-//                    @Override
-//                    public void onSuccess(int statusCode, Header[] headers, JSONArray response) {
-//                        ArrayList<Result> noteArray = new ArrayList<Result>();
-//                        ApdaterResult noteAdapter = new ApdaterResult(CheckTest.this, noteArray);
-//
-////                        for (int i = 0; i < response.length(); i++) {
-////                            try {
-////                                noteAdapter.add(new Result(response.getJSONObject(i)));
-////                            } catch (JSONException e) {
-////                                e.printStackTrace();
-////                            }
-////                        }
-//                        lvResult = (ListView) findViewById(R.id.ls_result);
-//                        lvResult.setAdapter(noteAdapter);
-//                    }
-//                });
-//    }
     private void danhsachKetQua() {
         dsResult.add(new Result("1","D","A"));
         dsResult.add(new Result("2","C","C"));
