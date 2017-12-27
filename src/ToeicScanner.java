@@ -46,7 +46,7 @@ public class ToeicScanner {
         return this.answers;
     };
     
-    public String AlignProcess() {
+    public boolean AlignProcess() {
     	Mat resultAlign = new Mat();
     	try {
 		resultAlign = this.Align(this.drawRoiImage);
@@ -58,9 +58,9 @@ public class ToeicScanner {
 		resultAlign = this.DrawCircle(resultAlign);
     	}
     	catch(Exception e) {    		
-    		return "False";
+    		return false;
     	}
-    	return "True";
+    	return true;
     }
     
 	public Mat DetectROI(Mat img){
