@@ -45,7 +45,11 @@ public class ToeicScanner {
     public List<Character> GetAnswers(){
         return this.answers;
     };
-    
+	
+    public Mat GetTemplateImage(){
+        return this.templateImage;
+    };
+	
     public boolean AlignProcess() {
     	Mat resultAlign = new Mat();
     	try {
