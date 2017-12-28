@@ -31,7 +31,7 @@ import static org.opencv.imgproc.Imgproc.warpAffine;
 public class ToeicScanner {
     private Mat inputImage = new Mat();                   // store configured input image
     private Mat colorInputImage = new Mat();                // store configured input image with color
-    private Mat templateImage = new Mat();                  // store configured template image
+    //    private Mat templateImage = new Mat();                  // store configured template image
     private Mat drawRoiImage = new Mat();
     private List<MatOfPoint> squares = new ArrayList<>();  // store points of squares (bounding box)
     private List<Integer> xGrid = new ArrayList<>();                  		// store bubble answer by x axis
@@ -42,20 +42,24 @@ public class ToeicScanner {
     private MatOfPoint approxf1 = new MatOfPoint();		// store largest contour Points
     private List<Character> answers = new ArrayList<>();               // store bubble answer from paper
     private int choosenThreshold = 50;
+    public Mat templateImage;
 
-
-    Mat result = new Mat();
-    Mat resultAlign = new Mat();
+    private Mat result = new Mat();
+    private Mat resultAlign = new Mat();
     //============================================================================================//
 
+    public List<MatOfPoint> GetSquare() {return this.squares;}
     public List<Character> GetAnswers(){
         return this.answers;
     };
+    public Mat GetResultAlign(){
+        return this.resultAlign;
+    };
 
-    public String AlignProcess() {
+    public boolean AlignProcess() {
         try {
             resultAlign = this.Align(this.drawRoiImage);
-
+            resultAlign = this.ImageRegistration(templateImage, resultAlign);
             resultAlign = this.DrawVerticalGrid(resultAlign, true);
             resultAlign = this.DrawHorizontalGrid(resultAlign, true);
 
@@ -63,16 +67,14 @@ public class ToeicScanner {
             resultAlign = this.DrawCircle(resultAlign);
         }
         catch(Exception e) {
-            return "False";
+            return false;
         }
-        return "True";
+        return true;
     }
 
     public Mat DetectROI(Mat img){
         this.LoadInputImage(img);
-
         this.drawRoiImage = this.Preprocess(this.inputImage);
-        Log.e("Cong sida","Hot ga");
         result = this.Detect(this.drawRoiImage);
         return result;
     };
@@ -81,12 +83,14 @@ public class ToeicScanner {
         Mat template_temp = temp;
         resize(template_temp, template_temp, new Size(1280, 768));
         Imgproc.cvtColor(template_temp, template_temp, Imgproc.COLOR_BGR2GRAY);
-        this.templateImage = template_temp;
+        templateImage = template_temp;
+        Log.e(" templateImage", templateImage.size().toString());
     };
 
     private void LoadInputImage(Mat img){
         Mat imgColor = new Mat();
         resize(img, imgColor, new Size(1280, 768));
+        Imgproc.cvtColor(imgColor, imgColor, Imgproc.COLOR_BGR2RGB);
         this.colorInputImage = imgColor;
 
         Mat imgGray = new Mat();
@@ -146,7 +150,6 @@ public class ToeicScanner {
         {
             approx.convertTo(this.approxf1, CvType.CV_32S);
             this.squares.add(this.approxf1);
-            System.out.println(this.squares);
         }
 
         Imgproc.polylines(this.colorInputImage, this.squares, true, new Scalar(0, 255, 0), 4);
@@ -281,6 +284,13 @@ public class ToeicScanner {
         resize(alignImage, alignImage, new Size(1280, 768));
 
         //============================= IMAGE REGISTRATION=========================//
+
+        return alignImage;
+    };
+
+    private Mat ImageRegistration(Mat templateImage, Mat alignImage){
+        Log.e("alignImage", alignImage.size().toString());
+        Log.e("ImageRegistration tem", templateImage.size().toString());
         // Define the motion model
         int warp_mode = Video.MOTION_AFFINE;
 
@@ -298,17 +308,16 @@ public class ToeicScanner {
         TermCriteria criteria = new TermCriteria(TermCriteria.COUNT + TermCriteria.EPS, number_of_iterations, termination_eps);
         Mat tempt = new Mat();
         // Run the ECC algorithm. The results are stored in warp_matrix.
-        Video.findTransformECC(this.templateImage, alignImage, warp_matrix, warp_mode, criteria, tempt);
+        Video.findTransformECC(templateImage, alignImage, warp_matrix, warp_mode, criteria, tempt);
         // Storage for warped image.
         Mat im2_aligned = new Mat();
-        warpAffine(alignImage, im2_aligned, warp_matrix, this.templateImage.size(), Imgproc.INTER_LINEAR + Imgproc.WARP_INVERSE_MAP);
+        warpAffine(alignImage, im2_aligned, warp_matrix, templateImage.size(), Imgproc.INTER_LINEAR + Imgproc.WARP_INVERSE_MAP);
 
         // Threshold image
         equalizeHist(im2_aligned, im2_aligned);
 
         return im2_aligned;
-    };
-
+    }
 
     private Mat DrawVerticalGrid(Mat img, boolean isDraw){
         int colAxis = 145;

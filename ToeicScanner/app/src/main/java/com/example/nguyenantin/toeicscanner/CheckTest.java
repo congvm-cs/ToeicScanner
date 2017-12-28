@@ -2,12 +2,15 @@ package com.example.nguyenantin.toeicscanner;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 
 import java.util.ArrayList;
+import java.util.Random;
+
 import android.content.Intent;
 import android.widget.TextView;
 
@@ -17,245 +20,379 @@ public class CheckTest extends AppCompatActivity {
     private Button btn_ok;
     private ArrayList<Result> dsResult;
     private ApdaterResult adapterResult;
-    int crread = 0;
+
+    private int count_correct_read = 0;
+    private int count_correct_listen = 0;
+
     private TextView txt_crread;
-    private TextView txt_icrread;
+    private TextView txt_total_read;
     private TextView txt_crlisten;
-    private TextView txt_icrlisten;
-    private int resultdoc = 0;
-    private static  String TAG = "Results :";
+    private TextView txt_total_listen;
+    private TextView  txt_sum;
+    private LinearLayout hide_nav;
+    private static  String TAG = "CheckTest";
+
+    private char[] arrResultAnswer;
+    private boolean onClick = true;
+    private int[] standardReadingScore;
+    private int[] standardListeningScore;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        View decorView = getWindow().getDecorView();
-        int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_FULLSCREEN;
-        decorView.setSystemUiVisibility(uiOptions);
+        hideSystemUI();
         setContentView(R.layout.activity_check_test);
 
         txt_crread = (TextView) findViewById(R.id.txt_crread);
+        txt_total_read = (TextView) findViewById(R.id.txt_icrread);
+        txt_crlisten = (TextView) findViewById(R.id.txt_crlisten);
+        txt_total_listen = (TextView) findViewById(R.id.txt_icrlisten);
+        txt_sum = (TextView) findViewById(R.id.txt_sum);
         btn_ok = (Button) findViewById(R.id.btn_ok);
-        btn_ok.setOnClickListener(new View.OnClickListener() {
+        hide_nav = (LinearLayout) findViewById(R.id.hide_nav);
+        // get data from camera
+        getExtra();
+        // Activity in component
+        hide_nav.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intentMain = new Intent( CheckTest.this, CustomCamera.class);
-                CheckTest.this.startActivity(intentMain);
+                hideSystemUI();
             }
         });
+        if(onClick==true) {
+            btn_ok.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (onClick == true) {
+                        onClick = false;
+                        hide_nav.setVisibility(View.VISIBLE);
+                        Intent intentMain = new Intent(CheckTest.this, CustomCamera.class);
+                        startActivity(intentMain);
+                    }
+                }
+            });
+        }
 
         lvResult = (ListView) findViewById(R.id.ls_result);
+
         dsResult=new ArrayList<>();
         adapterResult=new ApdaterResult(CheckTest.this,R.layout.itemt_result,dsResult);
+
         lvResult.setAdapter(adapterResult);
-        txt_crread.setText(String.valueOf(crread));
-        danhsachKetQua();
+
+        standardReadingScore = getStandardReadingScore();
+        standardListeningScore = getStandardListeningScore();
+
+
+        danhsachKetQua(arrResultAnswer);
+        txt_crread.setText(String.valueOf(count_correct_read));
+        txt_total_read.setText(String.valueOf(standardReadingScore[count_correct_read]));
+        txt_crlisten.setText(String.valueOf(count_correct_listen));
+        txt_total_listen.setText(String.valueOf(standardListeningScore[count_correct_listen]));
+        txt_sum.setText(String.valueOf(standardReadingScore[count_correct_read] +
+                                        standardListeningScore[count_correct_listen]));
     }
 
-    private void danhsachKetQua() {
-        dsResult.add(new Result("1","D","A"));
-        dsResult.add(new Result("2","C","C"));
-        dsResult.add(new Result("3","A","A"));
-        dsResult.add(new Result("4","B","B"));
-        dsResult.add(new Result("5","B","B"));
-        dsResult.add(new Result("6","A","A"));
-        dsResult.add(new Result("7","C","C"));
-        dsResult.add(new Result("8","C","C"));
-        dsResult.add(new Result("9","B","B"));
-        dsResult.add(new Result("10","A","x"));
-        dsResult.add(new Result("11","A","A"));
-        dsResult.add(new Result("12","C","C"));
-        dsResult.add(new Result("13","A","A"));
-        dsResult.add(new Result("14","B","B"));
-        dsResult.add(new Result("15","B","C"));
-        dsResult.add(new Result("16","A","A"));
-        dsResult.add(new Result("17","C","C"));
-        dsResult.add(new Result("18","C","C"));
-        dsResult.add(new Result("19","B","B"));
-        dsResult.add(new Result("20","A","x"));
-        dsResult.add(new Result("21","A","A"));
-        dsResult.add(new Result("22","C","C"));
-        dsResult.add(new Result("23","A","A"));
-        dsResult.add(new Result("24","B","B"));
-        dsResult.add(new Result("25","B","A"));
-        dsResult.add(new Result("26","A","A"));
-        dsResult.add(new Result("27","C","C"));
-        dsResult.add(new Result("28","C","C"));
-        dsResult.add(new Result("29","B","B"));
-        dsResult.add(new Result("30","A","x"));
-        dsResult.add(new Result("31","D","D"));
-        dsResult.add(new Result("32","C","C"));
-        dsResult.add(new Result("33","A","A"));
-        dsResult.add(new Result("34","B","B"));
-        dsResult.add(new Result("35","B","A"));
-        dsResult.add(new Result("36","A","A"));
-        dsResult.add(new Result("37","C","C"));
-        dsResult.add(new Result("38","C","C"));
-        dsResult.add(new Result("39","B","B"));
-        dsResult.add(new Result("40","A","x"));
-        dsResult.add(new Result("41","D","D"));
-        dsResult.add(new Result("42","C","C"));
-        dsResult.add(new Result("43","A","A"));
-        dsResult.add(new Result("44","B","B"));
-        dsResult.add(new Result("45","B","A"));
-        dsResult.add(new Result("46","A","A"));
-        dsResult.add(new Result("47","C","C"));
-        dsResult.add(new Result("48","C","C"));
-        dsResult.add(new Result("49","B","B"));
-        dsResult.add(new Result("50","A","x"));
-        dsResult.add(new Result("51","D","D"));
-        dsResult.add(new Result("52","C","C"));
-        dsResult.add(new Result("53","A","A"));
-        dsResult.add(new Result("54","B","B"));
-        dsResult.add(new Result("55","B","A"));
-        dsResult.add(new Result("56","A","A"));
-        dsResult.add(new Result("57","C","C"));
-        dsResult.add(new Result("58","C","C"));
-        dsResult.add(new Result("59","B","B"));
-        dsResult.add(new Result("60","A","x"));
-        dsResult.add(new Result("61","D","D"));
-        dsResult.add(new Result("62","C","C"));
-        dsResult.add(new Result("63","A","A"));
-        dsResult.add(new Result("64","B","B"));
-        dsResult.add(new Result("65","B","A"));
-        dsResult.add(new Result("66","A","A"));
-        dsResult.add(new Result("67","C","C"));
-        dsResult.add(new Result("68","C","C"));
-        dsResult.add(new Result("69","B","B"));
-        dsResult.add(new Result("70","A","x"));
-        dsResult.add(new Result("71","D","D"));
-        dsResult.add(new Result("72","C","C"));
-        dsResult.add(new Result("73","A","A"));
-        dsResult.add(new Result("74","B","B"));
-        dsResult.add(new Result("75","B","A"));
-        dsResult.add(new Result("76","A","A"));
-        dsResult.add(new Result("77","C","C"));
-        dsResult.add(new Result("78","C","C"));
-        dsResult.add(new Result("79","B","B"));
-        dsResult.add(new Result("80","A","x"));
-        dsResult.add(new Result("81","D","D"));
-        dsResult.add(new Result("82","C","C"));
-        dsResult.add(new Result("83","A","A"));
-        dsResult.add(new Result("84","B","B"));
-        dsResult.add(new Result("85","B","A"));
-        dsResult.add(new Result("86","A","A"));
-        dsResult.add(new Result("87","C","C"));
-        dsResult.add(new Result("88","C","C"));
-        dsResult.add(new Result("89","B","B"));
-        dsResult.add(new Result("90","A","x"));
-        dsResult.add(new Result("91","D","D"));
-        dsResult.add(new Result("92","C","C"));
-        dsResult.add(new Result("93","A","A"));
-        dsResult.add(new Result("94","B","B"));
-        dsResult.add(new Result("95","B","A"));
-        dsResult.add(new Result("96","A","A"));
-        dsResult.add(new Result("97","C","C"));
-        dsResult.add(new Result("98","C","C"));
-        dsResult.add(new Result("99","B","B"));
-        dsResult.add(new Result("100","A","x"));
-        dsResult.add(new Result("101","D","D"));
-        dsResult.add(new Result("102","C","C"));
-        dsResult.add(new Result("103","A","A"));
-        dsResult.add(new Result("104","B","B"));
-        dsResult.add(new Result("105","B","A"));
-        dsResult.add(new Result("106","A","A"));
-        dsResult.add(new Result("107","C","C"));
-        dsResult.add(new Result("108","C","C"));
-        dsResult.add(new Result("109","B","B"));
-        dsResult.add(new Result("110","A","x"));
-        dsResult.add(new Result("111","A","A"));
-        dsResult.add(new Result("112","C","C"));
-        dsResult.add(new Result("113","A","A"));
-        dsResult.add(new Result("114","B","B"));
-        dsResult.add(new Result("115","B","A"));
-        dsResult.add(new Result("116","A","A"));
-        dsResult.add(new Result("117","C","C"));
-        dsResult.add(new Result("118","C","C"));
-        dsResult.add(new Result("119","B","B"));
-        dsResult.add(new Result("120","A","x"));
-        dsResult.add(new Result("121","A","A"));
-        dsResult.add(new Result("122","C","C"));
-        dsResult.add(new Result("123","A","A"));
-        dsResult.add(new Result("124","B","B"));
-        dsResult.add(new Result("125","B","A"));
-        dsResult.add(new Result("126","A","A"));
-        dsResult.add(new Result("127","C","C"));
-        dsResult.add(new Result("128","C","C"));
-        dsResult.add(new Result("129","B","B"));
-        dsResult.add(new Result("130","A","x"));
-        dsResult.add(new Result("131","D","D"));
-        dsResult.add(new Result("132","C","C"));
-        dsResult.add(new Result("133","A","A"));
-        dsResult.add(new Result("134","B","B"));
-        dsResult.add(new Result("135","B","A"));
-        dsResult.add(new Result("136","A","A"));
-        dsResult.add(new Result("137","C","C"));
-        dsResult.add(new Result("138","C","C"));
-        dsResult.add(new Result("139","B","B"));
-        dsResult.add(new Result("140","A","x"));
-        dsResult.add(new Result("141","D","D"));
-        dsResult.add(new Result("142","C","C"));
-        dsResult.add(new Result("143","A","A"));
-        dsResult.add(new Result("144","B","B"));
-        dsResult.add(new Result("145","B","A"));
-        dsResult.add(new Result("146","A","A"));
-        dsResult.add(new Result("147","C","C"));
-        dsResult.add(new Result("148","C","C"));
-        dsResult.add(new Result("149","B","B"));
-        dsResult.add(new Result("150","A","x"));
-        dsResult.add(new Result("151","D","D"));
-        dsResult.add(new Result("152","C","C"));
-        dsResult.add(new Result("153","A","A"));
-        dsResult.add(new Result("154","B","B"));
-        dsResult.add(new Result("155","B","A"));
-        dsResult.add(new Result("156","A","A"));
-        dsResult.add(new Result("157","C","C"));
-        dsResult.add(new Result("158","C","C"));
-        dsResult.add(new Result("159","B","B"));
-        dsResult.add(new Result("160","A","x"));
-        dsResult.add(new Result("161","D","D"));
-        dsResult.add(new Result("162","C","C"));
-        dsResult.add(new Result("163","A","A"));
-        dsResult.add(new Result("164","B","B"));
-        dsResult.add(new Result("165","B","A"));
-        dsResult.add(new Result("166","A","A"));
-        dsResult.add(new Result("167","C","C"));
-        dsResult.add(new Result("168","C","C"));
-        dsResult.add(new Result("169","B","B"));
-        dsResult.add(new Result("170","A","x"));
-        dsResult.add(new Result("171","D","D"));
-        dsResult.add(new Result("172","C","C"));
-        dsResult.add(new Result("173","A","A"));
-        dsResult.add(new Result("174","B","B"));
-        dsResult.add(new Result("175","B","A"));
-        dsResult.add(new Result("176","A","A"));
-        dsResult.add(new Result("177","C","C"));
-        dsResult.add(new Result("178","C","C"));
-        dsResult.add(new Result("179","B","B"));
-        dsResult.add(new Result("180","A","x"));
-        dsResult.add(new Result("181","D","D"));
-        dsResult.add(new Result("182","C","C"));
-        dsResult.add(new Result("183","A","A"));
-        dsResult.add(new Result("184","B","B"));
-        dsResult.add(new Result("185","B","A"));
-        dsResult.add(new Result("186","A","A"));
-        dsResult.add(new Result("187","C","C"));
-        dsResult.add(new Result("188","C","C"));
-        dsResult.add(new Result("189","B","B"));
-        dsResult.add(new Result("190","A","x"));
-        dsResult.add(new Result("191","D","D"));
-        dsResult.add(new Result("192","C","C"));
-        dsResult.add(new Result("193","A","A"));
-        dsResult.add(new Result("194","B","B"));
-        dsResult.add(new Result("195","B","A"));
-        dsResult.add(new Result("196","A","A"));
-        dsResult.add(new Result("197","C","C"));
-        dsResult.add(new Result("198","C","C"));
-        dsResult.add(new Result("199","B","B"));
-        dsResult.add(new Result("200","A","x"));
+    //hide system navigation
+    // This snippet hides the system bars.
+    private void hideSystemUI() {
+        // Set the IMMERSIVE flag.
+        // Set the content to appear under the system bars so that the content
+        // doesn't resize when the system bars hide and show.
+        View decorView = getWindow().getDecorView();
+        decorView.setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+                        | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+                        | View.SYSTEM_UI_FLAG_IMMERSIVE);
+    }
+    // extra results
+    public void getExtra(){
+        arrResultAnswer = getIntent().getCharArrayExtra("arrResultAnswer");
+    }
+    //Create result emty
+    private void createArrEmpty(String [] temp){
+        for(int i=0;i<temp.length;i++){
+           temp[i]="X";
+        }
+    }
+    ///====================================
+    private char[] generateAnswerKey(){
+
+        Random rand = new Random();
+        char[] retAnswerKey = new char[200];
+        char[] answerKey = {'A', 'B', 'C', 'D'};
+
+        for(int index = 0; index < 200; index++){
+            int i1 = rand.nextInt(4);
+            retAnswerKey[index] = answerKey[i1];
+        }
+        return retAnswerKey;
+    }
+
+    private void danhsachKetQua(char [] abc) {
+        char[] answerKey = generateAnswerKey();
+        Log.e("arrResultAnswer", abc.toString());
+        String[] strArrResultAnswer = null;
+        strArrResultAnswer=Chuanhoachuoi(abc);
+//        arrResultAnswer = generateAnswerKey();
+
+        if(abc.length == 0){
+            Log.e(TAG, "Null arrResultAnswer");
+        }
+
+        // Show on ListView
+        for(int index = 0; index < 200; index++){
+            String userAnswer = strArrResultAnswer[index];
+            String question = Integer.toString(index+1);
+            String key = Character.toString(answerKey[index]);
+//            Log.e("Result Answer",strArrResultAnswer[index]);
+            dsResult.add(new Result(question, userAnswer, key));
+
+            // Show on Detail Table
+//            // Listening Part
+            if(index < 100){
+                if(userAnswer.equals(key)==true){
+                    count_correct_read++;
+                }
+            }
+            // Reading Part
+            if(index >= 100){
+                if(userAnswer.equals(key)==true){
+                    count_correct_listen++;
+                }
+            }
+    }
         adapterResult.notifyDataSetChanged();
+    }
+    private String[] Chuanhoachuoi(char[] a){
+        String [] temp = new String[a.length-1];
+        createArrEmpty(temp);
+        int index2 = 0;
+        for(int i=0;i<a.length-1;i++){
+            if(String.valueOf(a[i]).equals("A") || String.valueOf(a[i]).equals("B")
+                    || String.valueOf(a[i]).equals("C") || String.valueOf(a[i]).equals("D")
+                    || String.valueOf(a[i]).equals("X")){
+                temp[index2] = String.valueOf(a[i]);
+                index2++;
+            }
+        }
+        Log.e("Results: ",temp.toString());
+        return temp;
+    }
+    private int[] getStandardReadingScore(){
+        int[] standardScore = new int[101];
+
+        for(int index = 0; index < 101; index++) {
+            if (index < 10) {
+                standardScore[index] = 5;
+            }
+
+            if (index >= 10 && index < 25) {
+                standardScore[index] = standardScore[index - 1] + 5;
+            }
+
+            if (index == 25) {
+                standardScore[index] = 90;
+            }
+
+            if (index > 25 && index < 28) {
+                standardScore[index] = standardScore[index - 1] + 5;
+            }
+
+            if (index == 28) {
+                standardScore[index] = standardScore[index - 1] + 10;
+            }
+
+            if (index > 28 && index < 39) {
+                standardScore[index] = standardScore[index - 1] + 5;
+            }
+
+            if (index == 39) {
+                standardScore[index] = standardScore[index - 1] + 10;
+            }
+
+            if (index > 39 && index < 43) {
+                standardScore[index] = standardScore[index - 1] + 5;
+            }
+
+            if (index == 43) {
+                standardScore[index] = standardScore[index - 1] + 10;
+            }
+
+            if (index > 43 && index < 47) {
+                standardScore[index] = standardScore[index - 1] + 5;
+            }
+
+            if (index == 47) {
+                standardScore[index] = standardScore[index - 1] + 10;
+            }
+
+            if (index > 47 && index < 52) {
+                standardScore[index] = standardScore[index - 1] + 5;
+            }
+
+            if (index == 52) {
+                standardScore[index] = standardScore[index - 1] + 10;
+            }
+
+            if (index > 52 && index < 55) {
+                standardScore[index] = standardScore[index - 1] + 5;
+            }
+
+            if (index == 55) {
+                standardScore[index] = standardScore[index - 1] + 10;
+            }
+
+            if (index > 55 && index < 64) {
+                standardScore[index] = standardScore[index - 1] + 5;
+            }
+
+            if (index == 64) {
+                standardScore[index] = standardScore[index - 1] + 10;
+            }
+
+            if (index > 64 && index < 82) {
+                standardScore[index] = standardScore[index - 1] + 5;
+            }
+
+            if (index == 82) {
+                standardScore[index] = standardScore[index - 1];
+            }
+
+            if (index > 82 && index < 89) {
+                standardScore[index] = standardScore[index - 1] + 5;
+            }
+
+            if (index == 89) {
+                standardScore[index] = standardScore[index - 1] + 10;
+            }
+
+            if (index > 89 && index < 93) {
+                standardScore[index] = standardScore[index - 1] + 5;
+            }
+
+            if (index == 92) {
+                standardScore[index] = standardScore[index - 1] + 10;
+            }
+
+            if (index == 93) {
+                standardScore[index] = standardScore[index - 1] + 5;
+            }
+
+            if (index == 94) {
+                standardScore[index] = standardScore[index - 1] + 10;
+            }
+
+            if (index > 94 && index < 97) {
+                standardScore[index] = standardScore[index - 1] + 5;
+            }
+
+            if (index >= 97 && index < 101) {
+                standardScore[index] = 495;
+            }
+
+        }
+        return standardScore;
+    }
+    // Score Listening
+    private int[] getStandardListeningScore(){
+        int[] standardScore = new int[101];
+
+        for(int index = 0; index < 101; index++) {
+            if (index < 7) {
+                standardScore[index] = 5;
+            }
+
+            if (index >= 7 && index < 31) {
+                standardScore[index] = standardScore[index - 1] + 5;
+            }
+
+            if (index == 31) {
+                standardScore[index] = standardScore[index - 1] + 10;
+            }
+
+            if (index > 31 && index < 39) {
+                standardScore[index] = standardScore[index - 1] + 5;
+            }
+
+            if (index == 39) {
+                standardScore[index] = standardScore[index - 1] + 10;
+            }
+
+            if (index > 39 && index < 44) {
+                standardScore[index] = standardScore[index - 1] + 5;
+            }
+
+            if (index == 44 || index == 45) {
+                standardScore[index] = standardScore[index - 1] + 10;
+            }
+
+            if (index > 45 && index < 54) {
+                standardScore[index] = standardScore[index - 1] + 5;
+            }
+
+            if (index == 54) {
+                standardScore[index] = standardScore[index - 1] + 10;
+            }
+            if (index > 54 && index < 58) {
+                standardScore[index] = standardScore[index - 1] + 5;
+            }
+            if (index == 58) {
+                standardScore[index] = standardScore[index - 1] + 10;
+            }
+            if (index > 58 && index < 70) {
+                standardScore[index] = standardScore[index - 1] + 5;
+            }
+
+            if (index == 70) {
+                standardScore[index] = standardScore[index - 1] + 10;
+            }
+
+            if (index > 70 && index < 75) {
+                standardScore[index] = standardScore[index - 1] + 5;
+            }
+
+            if (index == 75) {
+                standardScore[index] = standardScore[index - 1] + 10;
+            }
+
+            if (index > 75 && index < 80) {
+                standardScore[index] = standardScore[index - 1] + 5;
+            }
+
+            if (index == 80) {
+                standardScore[index] = standardScore[index - 1] + 10;
+            }
+
+            if (index > 80 && index < 85) {
+                standardScore[index] = standardScore[index - 1] + 5;
+            }
+
+            if (index == 85) {
+                standardScore[index] = standardScore[index - 1] + 10;
+            }
+
+            if (index > 85 && index < 88) {
+                standardScore[index] = standardScore[index - 1] + 5;
+            }
+
+            if (index == 88) {
+                standardScore[index] = standardScore[index - 1]+10;
+            }
+
+            if (index > 88 && index < 93) {
+                standardScore[index] = standardScore[index - 1] + 5;
+            }
+
+            if (index >= 93 && index < 101) {
+                standardScore[index] = 495;
+            }
+
+        }
+        return standardScore;
     }
 }
 

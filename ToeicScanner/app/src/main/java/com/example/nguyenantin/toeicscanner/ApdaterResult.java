@@ -2,44 +2,36 @@ package com.example.nguyenantin.toeicscanner;
 
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.drawable.Drawable;
+import android.graphics.Color;
 import android.support.annotation.NonNull;
-import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.example.nguyenantin.toeicscanner.R.drawable.text;
-import static com.example.nguyenantin.toeicscanner.R.drawable.textincorrect;
-
-/**
- * Created by NguyenBao on 12/25/2016.
- */
-
 public class ApdaterResult extends ArrayAdapter<Result> {
-    Activity context;
-    int resource;
-    List<Result> objects;
-    LinearLayout ll_backgroundresult;
+    private Activity context;
+    private int resource;
+    private List<Result> objects;
+//    private LinearLayout ll_backgroundresult;
     public ApdaterResult(Activity context, int resource, List<Result> objects) {
         super(context, resource, objects);
         this.context=context;
         this.resource=resource;
         this.objects=objects;
     }
-    private static class ViewHolder {
-        TextView answer;
-    }
+//    private static class ViewHolder {
+//        TextView answer;
+//    }
+
     public ApdaterResult(Context context, ArrayList<Result> notes) {
         super(context, R.layout.itemt_result, notes);
     }
+
 //    @Override
 //    public View getView(int position, View convertView, ViewGroup parent) {
 //        Result note = getItem(position);
@@ -79,10 +71,14 @@ public class ApdaterResult extends ArrayAdapter<Result> {
         if (Integer.parseInt(txtSTT.getText().toString())>100 && !txtResult.getText().equals(txtResult2.getText().toString())){
             txtResult.setBackgroundResource(R.drawable.textincorrect);
             txtResult2.setBackgroundResource(R.drawable.textincorrect);
+            txtResult2.setTextColor(Color.WHITE);
+            txtResult.setTextColor(Color.WHITE);
 
         } else if(Integer.parseInt(txtSTT.getText().toString())<100 && !txtResult.getText().equals(txtResult2.getText().toString())){
             txtResult.setBackgroundResource(R.drawable.textincorrect);
             txtResult2.setBackgroundResource(R.drawable.textincorrect);
+            txtResult2.setTextColor(Color.WHITE);
+            txtResult.setTextColor(Color.WHITE);
         }
         else if(Integer.parseInt(txtSTT.getText().toString())<100 && txtResult.getText().equals(txtResult2.getText().toString())){
             txtResult.setBackgroundResource(R.drawable.text);

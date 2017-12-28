@@ -1,87 +1,125 @@
 package com.example.nguyenantin.toeicscanner;
 
-import android.app.Activity;
-
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import android.content.Context;
-import android.content.ContextWrapper;
+import java.io.InputStream;
 import android.content.Intent;
+import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.hardware.Camera;
-import android.hardware.Camera.PictureCallback;
-import android.hardware.Camera.ShutterCallback;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.annotation.Nullable;
+import android.support.v4.app.FragmentManager;
 import android.util.Log;
 import android.view.View;
-import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.FrameLayout;
-
+import android.widget.LinearLayout;
+import android.support.v7.app.AppCompatActivity;
+import org.opencv.android.OpenCVLoader;
+import org.opencv.android.Utils;
+import org.opencv.core.CvType;
+import android.hardware.Camera;
+import android.hardware.Camera.PictureCallback;
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfByte;
+import org.opencv.core.Scalar;
+import org.opencv.core.Size;
+import org.opencv.imgcodecs.Imgcodecs;
 import de.hdodenhof.circleimageview.CircleImageView;
 
-public class CustomCamera extends Activity {
+public class CustomCamera extends AppCompatActivity {
 
-    CircleImageView btnTake;
-    CircleImageView btn_checkresult;
-    CircleImageView btn_back;
-    char [] cvchar;
-    CircleImageView captureButton;
-
-    Intent intentView;
-    private static final String TAG = "CameraDemo";
+    private CircleImageView btn_back;
+    private CircleImageView captureButton;
     private Camera mCamera;
-    boolean flag =false;
-    byte [] image;
+    private FragmentManager fm = getSupportFragmentManager();
     private CameraPreview mPreview;
-    Bitmap tempbitmap;
-    public static final int MEDIA_TYPE_IMAGE = 1;
-
+    private static final String TAG = "CustomCamera";
+    private static AssetManager assetManager;
+    // Loads camera view of OpenCV for us to use. This lets us see using OpenCV
+    // Used in Camera selection from menu (when implemented)
+    private LinearLayout hide_nav;
+    // use OpenCv in component
+    static{
+        OpenCVLoader.initDebug();
+    }
+    private boolean click = true;
+    private Bitmap result = null;
+    //
+    private Intent intentCheckPicture;
+    private Mat inputImg;
+    private Mat processedImage;
+    private ToeicScanner scanner = new ToeicScanner();
+    private char[] arrResultAnswer;
+    private boolean isProcessed = false;    // check align process
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        View decorView = getWindow().getDecorView();
-        int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_FULLSCREEN;
-        decorView.setSystemUiVisibility(uiOptions);
+        hideSystemUI();
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_custom_camera);
-        if(flag==false) {
-            // Create an instance of Camera
-            mCamera = getCameraInstance();
+        LoadTemplate();
+        // Controller
+        captureButton = (CircleImageView)findViewById(R.id.btn_takepicture);
+        btn_back = (CircleImageView)findViewById(R.id.btn_back);
+        hide_nav = (LinearLayout) findViewById(R.id.hide_nav);
 
-            // Create our Preview view and set it as the content of our activity.
-            mPreview = new CameraPreview(this, mCamera);
-            FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
-            // Add a listener to the Capture button
-            captureButton = (CircleImageView) findViewById(R.id.btn_takepicture);
+        // Create an instance of Camera
+        mCamera = getCameraInstance();
 
-            captureButton.setOnClickListener(
-                    new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            // get an image from the camera
-                            Log.e(TAG, "takePicture");
-                            mCamera.takePicture(null, null, mPicture);
-                            Log.e(TAG, "takePicture done");
-                            return;
-                        }
+        // Create our Preview view and set it as the content of our activity.
+        mPreview = new CameraPreview(this, mCamera);
+        FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
+
+        preview.addView(mPreview);
+        //Activity in component
+        hide_nav.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                hideSystemUI();
+            }
+        });
+        if(click==true) {
+            captureButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (click == true) {
+                        hide_nav.setVisibility(View.VISIBLE);
+                        click = false;
+                        mCamera.takePicture(null, null, mPicture);
                     }
-            );
-//
-            preview.addView(mPreview);
+                }
+            });
         }
-        else{
-            Intent intent = new Intent(CustomCamera.this,CustomCamera.class);
-            startActivity(intent);
+        if(click==true) {
+            btn_back.setOnClickListener(new View.OnClickListener() {
+
+                @Override
+                public void onClick(View v) {
+                    if (click == true) {
+                        hide_nav.setVisibility(View.VISIBLE);
+                        click = false;
+                        Intent intent = new Intent(CustomCamera.this, SubmitIdTest.class);
+                        startActivity(intent);
+                    }
+                }
+            });
         }
+    }
+
+
+    private void hideSystemUI() {
+        // Set the IMMERSIVE flag.
+        // Set the content to appear under the system bars so that the content
+        // doesn't resize when the system bars hide and show.
+        View decorView = getWindow().getDecorView();
+        decorView.setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+                        | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+                        | View.SYSTEM_UI_FLAG_IMMERSIVE);
     }
 
     /** A safe way to get an instance of the Camera object. */
@@ -95,110 +133,118 @@ public class CustomCamera extends Activity {
         }
         return c; // returns null if camera is unavailable
     }
-    ShutterCallback shutterCallback = new ShutterCallback() {
-        public void onShutter() {
-            Log.d(TAG, "onShutter'd");
-        }
-    };
-    /** Create a file Uri for saving an image or video */
-    private static Uri getOutputMediaFileUri(int type){
-        return Uri.fromFile(getOutputMediaFile(type));
-    }
 
-    /** Create a File for saving an image or video */
-    private static File getOutputMediaFile(int type){
-        // To be safe, you should check that the SDCard is mounted
-        // using Environment.getExternalStorageState() before doing this.
-
-        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES), "ToiecScanner");
-        // This location works best if you want the created images to be shared
-        // between applications and persist after your app has been uninstalled.
-
-        // Create the storage directory if it does not exist
-        if (! mediaStorageDir.exists()){
-            if (! mediaStorageDir.mkdirs()){
-                Log.d("ToiecScanner", "failed to create directory");
-                return null;
-            }
-        }
-
-        // Create a media file name
-        String timeStamp = "newsky";
-        File mediaFile;
-        if (type == MEDIA_TYPE_IMAGE){
-            mediaFile = new File(mediaStorageDir.getPath() + File.separator + timeStamp + ".jpg");
-        } else {
-            return null;
-        }
-
-        return mediaFile;
-    }
-    private String saveToInternalStorage(Bitmap bitmapImage){
-        ContextWrapper cw = new ContextWrapper(getApplicationContext());
-        File directory = cw.getDir("ToiecScanner", Context.MODE_PRIVATE);
-        // Create imageDir
-        File mypath=new File(directory,"profile.jpg");
-        FileOutputStream fos = null;
-        try {
-            fos = new FileOutputStream(mypath);
-            // Use the compress method on the BitMap object to write image to the OutputStream
-            bitmapImage.compress(Bitmap.CompressFormat.PNG, 10000, fos);
-            Log.e(TAG,"da chay qua file output");
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                fos.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        Log.e(TAG,"da chay xong load anh");
-        return directory.getAbsolutePath();
-    }
+    ///=================================================
     private PictureCallback mPicture = new PictureCallback() {
 
         @Override
         public void onPictureTaken(byte[] data, Camera camera) {
-            Log.e(TAG, "Show now1");
-            String filename;
-            if (data == null) {
-                Log.e(TAG, "Show now2");
-                return;
-            } else {
-                Log.e(TAG, "Show now3");
-                image = data;
-                tempbitmap = convertBitmapfrombyte(data);
-                filename = saveToInternalStorage(tempbitmap);
-            }
+            android.hardware.Camera.Size pictureSize = camera.getParameters().getPictureSize();
 
-            Log.e(TAG, "Show done: " + filename);
+            Log.e(TAG, "onPictureTaken - received image " + pictureSize.width + "x" + pictureSize.height);
+            inputImg = new Mat(new Size(pictureSize.width, pictureSize.height), CvType.CV_8U);
+            inputImg = Imgcodecs.imdecode(new MatOfByte(data), Imgcodecs.CV_LOAD_IMAGE_UNCHANGED);
+            Log.e(TAG, "inputImage size:" + inputImg.size().toString());
 
-            intentView = new Intent(CustomCamera.this, CheckPicture.class);
-
-            if (image == null) {
-                Log.e(TAG, "image null");
-            } else {
-                //Bitmap abc = convertBitmapfrombyte(data);
-                //
-//                Bundle bundle = new Bundle();
-//              String sendString = convertByteArrayToString(data);
-                intentView = intentView.putExtra("filename",filename);
-                flag=true;
-                intentView = intentView.putExtra("flag",flag);
-//                intentView.putExtra(bundle);
-                //
-                //intentView.putExtra("1", abc);
-                startActivity(intentView);
-
-                Log.e(TAG, "Transfer done");
+            try {
+                ButtonProcess();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
     };
-    public Bitmap convertBitmapfrombyte(byte [] data) {
-        Log.e(TAG, "Successful convertion to bitmap");
-        Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
-        return bitmap;
+
+    //
+    @Override
+    protected void onPause() {
+        super.onPause();
+        releaseCamera();              // release the camera immediately on pause event
+    }
+
+    private void releaseCamera(){
+        if (mCamera != null){
+            mCamera.release();        // release the camera for other applications
+            mCamera = null;
+        }
+    }
+
+    /////================================================
+    public void ButtonProcess() throws IOException {
+        Log.e(TAG,"captureButton: Click");
+//        processedImage = Process(inputImage);
+
+        try {
+            processedImage = Process(inputImg);
+            Log.e("Size of processedImage:", processedImage.size().toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // send processed Image, isProcessed, resultAnswer
+        intentCheckPicture = new Intent(CustomCamera.this, CheckPicture.class);
+
+        long Mat_Image = processedImage.getNativeObjAddr();
+        Log.e(TAG,"mat img: Click" + Mat_Image);
+
+        intentCheckPicture.putExtra("mat_image", Mat_Image);
+        intentCheckPicture.putExtra("arrResultAnswer", arrResultAnswer);
+        intentCheckPicture.putExtra("isProcessed", isProcessed);
+
+        Log.e(TAG,"captureButton: Done");
+        startActivity(intentCheckPicture);
+    }
+
+    public Mat Process(Mat img) throws IOException{
+        Log.e("Show input image size", img.size().toString());
+        Mat I_temp = new Mat();
+
+        // process image take to camera
+        I_temp = scanner.DetectROI(img);
+
+        Log.e(TAG, "GetSquare " + scanner.GetSquare().toString());
+        isProcessed = scanner.AlignProcess();
+        if(isProcessed==false){
+            DFragment alertdFragment = new DFragment();
+            alertdFragment.show(fm, "Image wasn't processed. Please, come back take picture!!");
+        }
+        Log.e(TAG, "isProcessed " + isProcessed);
+
+        arrResultAnswer = scanner.GetAnswers().toString().toCharArray(); // String result frome array char
+        Log.e(TAG, "resultAnswer " + arrResultAnswer);
+
+        Log.e("Show size i_temp", I_temp.size().toString());
+        Log.e("Show size item", scanner.GetResultAlign().size().toString());
+
+        I_temp = scanner.GetResultAlign();
+
+        return I_temp;
+    }
+
+    private void LoadTemplate(){
+        Log.e(TAG, "Load Template");
+        try {
+            assetManager = getAssets();
+            String filename = "image/templates.jpg";
+            InputStream img = assetManager.open(filename);
+            Bitmap bitmap_templates = BitmapFactory.decodeStream(img);
+            if(bitmap_templates.toString()!=null ){
+                Log.e(TAG, "I_templates null, please extra!!! ");
+            }
+            Mat I_templates = new Mat(bitmap_templates.getHeight(), bitmap_templates.getWidth(), CvType.CV_8UC3);
+            I_templates.setTo(Scalar.all(0));
+            Bitmap bmp32 = bitmap_templates.copy(Bitmap.Config.ARGB_8888, true);
+            Utils.bitmapToMat(bmp32, I_templates);
+            if(I_templates.empty()){
+                Log.e(TAG, "I_templates null, please extra!!! ");
+            }
+            Log.e(TAG, "I_templates size: " + I_templates.size().toString());
+
+            scanner.LoadTemplate(I_templates);
+
+            Log.e(TAG, "Finish");
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

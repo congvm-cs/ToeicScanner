@@ -1,8 +1,5 @@
 package com.example.nguyenantin.toeicscanner;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 /**
  * Created by nguyenantin on 12/18/17.
  */
@@ -13,16 +10,13 @@ public class Result
     private String result2;
     private String id;
     private String stt;
-    int crread = 0;
-    int crlisten = 0;
+
     public Result() {
     }
 
     public Result(String stt, String result, String result2) {
         this.result = result;
         this.result2 = result2;
-        this.crlisten = 0;
-        this.crread = 0;
         this.stt = stt;
     }
 //    public Result(JSONObject object) {

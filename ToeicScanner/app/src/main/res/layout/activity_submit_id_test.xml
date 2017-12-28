@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     android:weightSum="12"
     android:orientation="vertical"
+    android:id="@+id/hide_nav"
     android:gravity="center"
     android:background="@android:color/holo_blue_light"
     tools:context="com.example.nguyenantin.toeicscanner.SubmitIdTest">
@@ -112,7 +113,7 @@
                     android:textSize="12dp"
                     android:textColor="@android:color/white"
                     android:textAlignment="center"
-                    android:text="Copyright by Tronjans Team"
+                    android:text="Copyright by Trojans Team"
                     android:layout_height="match_parent" />
             </LinearLayout>
         </LinearLayout>
