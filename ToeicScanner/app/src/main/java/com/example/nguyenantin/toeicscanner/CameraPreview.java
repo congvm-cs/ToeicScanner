@@ -1,6 +1,7 @@
 package com.example.nguyenantin.toeicscanner;
 
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -8,7 +9,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import java.io.IOException;
-import java.util.List;
+
 
 /**
  * Created by nguyenantin on 12/28/17.
@@ -41,7 +42,6 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         //*EDIT*//params.setFocusMode("continuous-picture");
         //It is better to use defined constraints as opposed to String, thanks to AbdelHady
         params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
-        mCamera.setParameters(params);
     }
 
     public void surfaceDestroyed(SurfaceHolder holder) {
@@ -86,7 +86,6 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
         // set preview size and make any resize, rotate or
         // reformatting changes here
-
         // start preview with new settings
         try {
             mCamera.setPreviewDisplay(mHolder);
@@ -95,6 +94,16 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         } catch (Exception e){
             Log.d(TAG, "Error starting camera preview: " + e.getMessage());
         }
-
+    }
+    //Open Flash
+    public boolean setFlash(PackageManager pm, boolean stateFlash) {
+        if (pm.hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH)) {
+            Camera.Parameters par = mCamera.getParameters();
+            par.setFlashMode(stateFlash ? Camera.Parameters.FLASH_MODE_TORCH : Camera.Parameters.FLASH_MODE_OFF);
+            mCamera.setParameters(par);
+            Log.d(TAG, "flash: " + (stateFlash ? "on" : "off"));
+            return stateFlash;
+        }
+        return false;
     }
 }

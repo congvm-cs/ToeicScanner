@@ -68,7 +68,7 @@ public class ApdaterResult extends ArrayAdapter<Result> {
         txtResult.setText(result.getResult());
         txtResult2.setText(result.getResult2());
 
-        if (Integer.parseInt(txtSTT.getText().toString())>100 && !txtResult.getText().equals(txtResult2.getText().toString())){
+        if (Integer.parseInt(txtSTT.getText().toString())>=100 && !txtResult.getText().equals(txtResult2.getText().toString())){
             txtResult.setBackgroundResource(R.drawable.textincorrect);
             txtResult2.setBackgroundResource(R.drawable.textincorrect);
             txtResult2.setTextColor(Color.WHITE);
@@ -84,7 +84,7 @@ public class ApdaterResult extends ArrayAdapter<Result> {
             txtResult.setBackgroundResource(R.drawable.text);
             txtResult2.setBackgroundResource(R.drawable.text);
         }
-        else if(Integer.parseInt(txtSTT.getText().toString())>100 && txtResult.getText().equals(txtResult2.getText().toString())){
+        else if(Integer.parseInt(txtSTT.getText().toString())>=100 && txtResult.getText().equals(txtResult2.getText().toString())){
             txtResult.setBackgroundResource(R.drawable.text);
             txtResult2.setBackgroundResource(R.drawable.text);
         }

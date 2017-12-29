@@ -1,6 +1,5 @@
 package com.example.nguyenantin.toeicscanner;
 
-import android.util.Log;
 
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
@@ -12,14 +11,17 @@ import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.core.TermCriteria;
+import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.utils.Converters;
 import org.opencv.video.Video;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import static java.lang.Math.max;
 import static java.lang.Math.sqrt;
+import static org.opencv.imgproc.Imgproc.adaptiveThreshold;
 import static org.opencv.imgproc.Imgproc.equalizeHist;
 import static org.opencv.imgproc.Imgproc.getStructuringElement;
 import static org.opencv.imgproc.Imgproc.line;
@@ -31,27 +33,23 @@ import static org.opencv.imgproc.Imgproc.warpAffine;
 public class ToeicScanner {
     private Mat inputImage = new Mat();                   // store configured input image
     private Mat colorInputImage = new Mat();                // store configured input image with color
-    //    private Mat templateImage = new Mat();                  // store configured template image
+    private Mat templateImage = new Mat();                  // store configured template image
     private Mat drawRoiImage = new Mat();
     private List<MatOfPoint> squares = new ArrayList<>();  // store points of squares (bounding box)
     private List<Integer> xGrid = new ArrayList<>();                  		// store bubble answer by x axis
     private List<Integer> yGrid = new ArrayList<>();          		// store bubble answer by y axis
 
-    private int circleRadius = 5;                   // store bubble answer radius
+    private int circleRadius = 6;                   // store bubble answer radius
     private char[] answerKey = {'A', 'B', 'C', 'D', 'X'};
     private MatOfPoint approxf1 = new MatOfPoint();		// store largest contour Points
     private List<Character> answers = new ArrayList<>();               // store bubble answer from paper
-    private int choosenThreshold = 50;
-    public Mat templateImage;
-
-    private Mat result = new Mat();
-    private Mat resultAlign = new Mat();
+    private int choosenThreshold = 150;
+    Mat resultAlign = new Mat();
     //============================================================================================//
-
-    public List<MatOfPoint> GetSquare() {return this.squares;}
     public List<Character> GetAnswers(){
         return this.answers;
     };
+
     public Mat GetResultAlign(){
         return this.resultAlign;
     };
@@ -59,9 +57,9 @@ public class ToeicScanner {
     public boolean AlignProcess() {
         try {
             resultAlign = this.Align(this.drawRoiImage);
-            resultAlign = this.ImageRegistration(templateImage, resultAlign);
-            resultAlign = this.DrawVerticalGrid(resultAlign, true);
-            resultAlign = this.DrawHorizontalGrid(resultAlign, true);
+
+            resultAlign = this.DrawVerticalGrid(resultAlign, false);
+            resultAlign = this.DrawHorizontalGrid(resultAlign, false);
 
             this.DetectAnswer(resultAlign);
             resultAlign = this.DrawCircle(resultAlign);
@@ -73,24 +71,24 @@ public class ToeicScanner {
     }
 
     public Mat DetectROI(Mat img){
+//		this.LoadTemplate();
         this.LoadInputImage(img);
+        Mat result = new Mat();
         this.drawRoiImage = this.Preprocess(this.inputImage);
         result = this.Detect(this.drawRoiImage);
         return result;
     };
 
-    public void LoadTemplate(Mat temp){
-        Mat template_temp = temp;
+    private void LoadTemplate(){
+        Mat template_temp = Imgcodecs.imread("/media/vmc/Data/VMC/Workspace/Toeic-Scanner/Scanner/assets/templates/T2.jpg");
         resize(template_temp, template_temp, new Size(1280, 768));
         Imgproc.cvtColor(template_temp, template_temp, Imgproc.COLOR_BGR2GRAY);
-        templateImage = template_temp;
-        Log.e(" templateImage", templateImage.size().toString());
+        this.templateImage = template_temp;
     };
 
     private void LoadInputImage(Mat img){
         Mat imgColor = new Mat();
         resize(img, imgColor, new Size(1280, 768));
-        Imgproc.cvtColor(imgColor, imgColor, Imgproc.COLOR_BGR2RGB);
         this.colorInputImage = imgColor;
 
         Mat imgGray = new Mat();
@@ -150,13 +148,14 @@ public class ToeicScanner {
         {
             approx.convertTo(this.approxf1, CvType.CV_32S);
             this.squares.add(this.approxf1);
+            System.out.println(this.squares);
         }
 
         Imgproc.polylines(this.colorInputImage, this.squares, true, new Scalar(0, 255, 0), 4);
 
         for(int i = 0; i < this.approxf1.total(); i++)
         {
-            this.approxf1.get(i, 0);
+            System.out.println(this.approxf1.get(i, 0));
             Imgproc.circle(this.colorInputImage, new Point(this.approxf1.get(i, 0)), 15, new  Scalar(0, 0, 255), 2);
             Imgproc.circle(this.colorInputImage, new Point(this.approxf1.get(i, 0)), 5,new  Scalar(0, 0, 255), -1);
         }
@@ -177,8 +176,8 @@ public class ToeicScanner {
 
         Point tl = new Point();
         Point br = new Point();
-        Point tr;
-        Point bl;
+        Point tr = new Point();
+        Point bl = new Point();
         // Find Top Left Point
         int indexMinSum = 0;
         int minSum = (int) (squarePoint.get(0).x + squarePoint.get(0).y) ;
@@ -282,15 +281,14 @@ public class ToeicScanner {
 
         // Resize to Approriate Size
         resize(alignImage, alignImage, new Size(1280, 768));
-
-        //============================= IMAGE REGISTRATION=========================//
-
+        equalizeHist(alignImage, alignImage);
+//        adaptiveThreshold(alignImage, alignImage, 255, Imgproc.ADAPTIVE_THRESH_MEAN_C, Imgproc.THRESH_BINARY, 15, 40);
+//        Imgproc.threshold(alignImage, alignImage, 100, 255, Imgproc.THRESH_BINARY_INV);
         return alignImage;
     };
 
-    private Mat ImageRegistration(Mat templateImage, Mat alignImage){
-        Log.e("alignImage", alignImage.size().toString());
-        Log.e("ImageRegistration tem", templateImage.size().toString());
+    private Mat ImageRegistration(Mat alignImage) {
+        //============================= IMAGE REGISTRATION=========================//
         // Define the motion model
         int warp_mode = Video.MOTION_AFFINE;
 
@@ -308,10 +306,10 @@ public class ToeicScanner {
         TermCriteria criteria = new TermCriteria(TermCriteria.COUNT + TermCriteria.EPS, number_of_iterations, termination_eps);
         Mat tempt = new Mat();
         // Run the ECC algorithm. The results are stored in warp_matrix.
-        Video.findTransformECC(templateImage, alignImage, warp_matrix, warp_mode, criteria, tempt);
+        Video.findTransformECC(this.templateImage, alignImage, warp_matrix, warp_mode, criteria, tempt);
         // Storage for warped image.
         Mat im2_aligned = new Mat();
-        warpAffine(alignImage, im2_aligned, warp_matrix, templateImage.size(), Imgproc.INTER_LINEAR + Imgproc.WARP_INVERSE_MAP);
+        warpAffine(alignImage, im2_aligned, warp_matrix, this.templateImage.size(), Imgproc.INTER_LINEAR + Imgproc.WARP_INVERSE_MAP);
 
         // Threshold image
         equalizeHist(im2_aligned, im2_aligned);
@@ -320,9 +318,9 @@ public class ToeicScanner {
     }
 
     private Mat DrawVerticalGrid(Mat img, boolean isDraw){
-        int colAxis = 145;
+        int colAxis = 146;
         int colRange = 57;
-        int colWidth[] = {116, 114, 113, 113, 112, 112, 114, 115, 115, 112};
+        int colWidth[] = {114, 110, 113, 113, 112, 112, 112, 113, 113, 112};
         for(int colIndex = 0; colIndex < 10; colIndex++)
         {
             List<Double> cols = linspace(colAxis, colAxis + colRange, 4);
@@ -342,9 +340,9 @@ public class ToeicScanner {
     };
 
     private Mat DrawHorizontalGrid(Mat img, boolean isDraw){
-        int rowAxis = 191;
-        int rowRange = 190;
-        int[] rowWidth = {265, 0};
+        int rowAxis = 213;
+        int rowRange = 180;
+        int[] rowWidth = {250, 0};
         for(int rowIndex = 0; rowIndex < 2; rowIndex++)
         {
             List<Double> rows = linspace(rowAxis, rowAxis + rowRange, 10);

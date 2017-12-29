@@ -7,21 +7,20 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
 import org.opencv.core.Mat;
-import java.io.IOError;
 
-import de.hdodenhof.circleimageview.CircleImageView;
 
 public class CheckPicture extends AppCompatActivity {
 
     private static ImageView imageView;
-    private static CircleImageView btn_cancel;
-    private static CircleImageView btn_next;
+    private static Button btn_cancel;
+    private static Button btn_next;
     private static final String TAG = "CheckPicture";
     private  FragmentManager fm = getSupportFragmentManager();
     private char[] arrResultAnswer;
@@ -42,8 +41,8 @@ public class CheckPicture extends AppCompatActivity {
         Bundle extras = getIntent().getExtras();
 
         imageView = (ImageView) findViewById(R.id.image_check);
-        btn_cancel = (CircleImageView) findViewById(R.id.btn_cancel);
-        btn_next = (CircleImageView) findViewById(R.id.btn_next);
+        btn_cancel = (Button) findViewById(R.id.btn_cancel);
+        btn_next = (Button) findViewById(R.id.btn_next);
         hide_nav = (LinearLayout) findViewById(R.id.hide_nav);
 
 //        LoadTemplate();

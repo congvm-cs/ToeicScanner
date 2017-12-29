@@ -2,15 +2,23 @@ package com.example.nguyenantin.toeicscanner;
 
 import java.io.IOException;
 import java.io.InputStream;
+
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentManager;
+import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -19,17 +27,18 @@ import org.opencv.android.Utils;
 import org.opencv.core.CvType;
 import android.hardware.Camera;
 import android.hardware.Camera.PictureCallback;
+import android.widget.Toast;
+
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
-import de.hdodenhof.circleimageview.CircleImageView;
 
 public class CustomCamera extends AppCompatActivity {
 
-    private CircleImageView btn_back;
-    private CircleImageView captureButton;
+    private Button btn_back;
+    private Button captureButton;
     private Camera mCamera;
     private FragmentManager fm = getSupportFragmentManager();
     private CameraPreview mPreview;
@@ -42,12 +51,14 @@ public class CustomCamera extends AppCompatActivity {
     static{
         OpenCVLoader.initDebug();
     }
+    ProgressDialog progressDoalog;
     private boolean click = true;
-    private Bitmap result = null;
+    private boolean mFlashMode = false;
     //
     private Intent intentCheckPicture;
     private Mat inputImg;
     private Mat processedImage;
+    private boolean processing = false;
     private ToeicScanner scanner = new ToeicScanner();
     private char[] arrResultAnswer;
     private boolean isProcessed = false;    // check align process
@@ -58,18 +69,42 @@ public class CustomCamera extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_custom_camera);
-        LoadTemplate();
+//        LoadTemplate();
+
+
         // Controller
-        captureButton = (CircleImageView)findViewById(R.id.btn_takepicture);
-        btn_back = (CircleImageView)findViewById(R.id.btn_back);
+        FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
+        captureButton = (Button)findViewById(R.id.btn_takepicture);
+        btn_back = (Button)findViewById(R.id.btn_back);
         hide_nav = (LinearLayout) findViewById(R.id.hide_nav);
 
+        Toast.makeText(CustomCamera.this, "Align Your Test Center", Toast.LENGTH_SHORT).show();
+        final Button flashModeButton = (Button) findViewById(R.id.flashModeButton);
+
+        flashModeButton.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                if(mFlashMode==false) {
+                    PackageManager packageManager = getPackageManager();
+                    mPreview.setFlash(packageManager, true);
+                    flashModeButton.setBackgroundResource(R.drawable.ic_flash_on_24dp);
+                    mFlashMode=true;
+                }
+                else {
+                    PackageManager packageManager = getPackageManager();
+                    mPreview.setFlash(packageManager, false);
+                    flashModeButton.setBackgroundResource(R.drawable.ic_flash_off_24dp);
+                    mFlashMode=false;
+                }
+
+            }
+        });
         // Create an instance of Camera
         mCamera = getCameraInstance();
 
         // Create our Preview view and set it as the content of our activity.
         mPreview = new CameraPreview(this, mCamera);
-        FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
 
         preview.addView(mPreview);
         //Activity in component
@@ -87,10 +122,44 @@ public class CustomCamera extends AppCompatActivity {
                         hide_nav.setVisibility(View.VISIBLE);
                         click = false;
                         mCamera.takePicture(null, null, mPicture);
+                        progressDoalog = new ProgressDialog(CustomCamera.this);
+                        progressDoalog.setMax(100);
+                        progressDoalog.setTitle("Image is processing, please wait!!!");
+                        progressDoalog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                        progressDoalog.show();
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    while (processing ==false) {
+                                        Thread.sleep(70);
+                                        hideSystemUI();
+                                        PackageManager packageManager = getPackageManager();
+                                        mPreview.setFlash(packageManager, false);
+                                        flashModeButton.setBackgroundResource(R.drawable.ic_flash_off_24dp);
+                                        mFlashMode=false;
+                                        handle.sendMessage(handle.obtainMessage());
+                                        if (processing ==true) {
+                                            progressDoalog.dismiss();
+                                        }
+                                    }
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }).start();
                     }
                 }
+                Handler handle = new Handler() {
+                    @Override
+                    public void handleMessage(Message msg) {
+                        super.handleMessage(msg);
+                        progressDoalog.incrementProgressBy(1);
+                    }
+                };
             });
         }
+
         if(click==true) {
             btn_back.setOnClickListener(new View.OnClickListener() {
 
@@ -106,8 +175,20 @@ public class CustomCamera extends AppCompatActivity {
             });
         }
     }
-
-
+    //Processing
+    //Flash
+    public boolean setFlash(boolean stateFlash) {
+        PackageManager pm = getPackageManager();
+        if (pm.hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH)) {
+            Camera.Parameters par = mCamera.getParameters();
+            par.setFlashMode(stateFlash ? Camera.Parameters.FLASH_MODE_TORCH : Camera.Parameters.FLASH_MODE_OFF);
+            mCamera.setParameters(par);
+            Log.d(TAG, "flash: " + (stateFlash ? "on" : "off"));
+            return stateFlash;
+        }
+        return false;
+    }
+    //=========
     private void hideSystemUI() {
         // Set the IMMERSIVE flag.
         // Set the content to appear under the system bars so that the content
@@ -201,7 +282,7 @@ public class CustomCamera extends AppCompatActivity {
         // process image take to camera
         I_temp = scanner.DetectROI(img);
 
-        Log.e(TAG, "GetSquare " + scanner.GetSquare().toString());
+//        Log.e(TAG, "GetSquare " + scanner.GetSquare().toString());
         isProcessed = scanner.AlignProcess();
         if(isProcessed==false){
             DFragment alertdFragment = new DFragment();
@@ -216,7 +297,7 @@ public class CustomCamera extends AppCompatActivity {
         Log.e("Show size item", scanner.GetResultAlign().size().toString());
 
         I_temp = scanner.GetResultAlign();
-
+        processing =true;
         return I_temp;
     }
 
@@ -239,7 +320,7 @@ public class CustomCamera extends AppCompatActivity {
             }
             Log.e(TAG, "I_templates size: " + I_templates.size().toString());
 
-            scanner.LoadTemplate(I_templates);
+//            scanner.LoadTemplate(I_templates);
 
             Log.e(TAG, "Finish");
 
