@@ -3,8 +3,8 @@ package com.example.nguyenantin.toeicscanner;
 import java.io.IOException;
 import java.io.InputStream;
 
+import android.Manifest;
 import android.app.ProgressDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
@@ -13,9 +13,11 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.SystemClock;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentManager;
-import android.support.v7.app.AlertDialog;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -39,9 +41,9 @@ public class CustomCamera extends AppCompatActivity {
 
     private Button btn_back;
     private Button captureButton;
-    private Camera mCamera;
+    Camera mCamera;
     private FragmentManager fm = getSupportFragmentManager();
-    private CameraPreview mPreview;
+    CameraPreview mPreview;
     private static final String TAG = "CustomCamera";
     private static AssetManager assetManager;
     // Loads camera view of OpenCV for us to use. This lets us see using OpenCV
@@ -51,7 +53,8 @@ public class CustomCamera extends AppCompatActivity {
     static{
         OpenCVLoader.initDebug();
     }
-    ProgressDialog progressDoalog;
+    private long mLastClickTime = 0;
+    private ProgressDialog progressDoalog;
     private boolean click = true;
     private boolean mFlashMode = false;
     //
@@ -69,44 +72,55 @@ public class CustomCamera extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_custom_camera);
-//        LoadTemplate();
-
-
+        try {
+            LoadTemplate();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+        // permission camera
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                == PackageManager.PERMISSION_DENIED)
+            ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.CAMERA}, 100);
         // Controller
         FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
         captureButton = (Button)findViewById(R.id.btn_takepicture);
         btn_back = (Button)findViewById(R.id.btn_back);
         hide_nav = (LinearLayout) findViewById(R.id.hide_nav);
-
-        Toast.makeText(CustomCamera.this, "Align Your Test Center", Toast.LENGTH_SHORT).show();
-        final Button flashModeButton = (Button) findViewById(R.id.flashModeButton);
-
-        flashModeButton.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                if(mFlashMode==false) {
-                    PackageManager packageManager = getPackageManager();
-                    mPreview.setFlash(packageManager, true);
-                    flashModeButton.setBackgroundResource(R.drawable.ic_flash_on_24dp);
-                    mFlashMode=true;
-                }
-                else {
-                    PackageManager packageManager = getPackageManager();
-                    mPreview.setFlash(packageManager, false);
-                    flashModeButton.setBackgroundResource(R.drawable.ic_flash_off_24dp);
-                    mFlashMode=false;
-                }
-
-            }
-        });
         // Create an instance of Camera
         mCamera = getCameraInstance();
 
+        if(mCamera == null){
+            Log.e(TAG, "camera null");
+        }
         // Create our Preview view and set it as the content of our activity.
         mPreview = new CameraPreview(this, mCamera);
-
         preview.addView(mPreview);
+        Toast.makeText(CustomCamera.this, "Align Your Test Center", Toast.LENGTH_SHORT).show();
+        final Button flashModeButton = (Button) findViewById(R.id.flashModeButton);
+        try {
+            flashModeButton.setOnClickListener(new View.OnClickListener() {
+
+                @Override
+                public void onClick(View v) {
+                    if (mFlashMode == false) {
+                        PackageManager packageManager = getPackageManager();
+                        mPreview.setFlash(packageManager, true);
+                        flashModeButton.setBackgroundResource(R.drawable.ic_flash_on_24dp);
+                        mFlashMode = true;
+                    } else {
+                        PackageManager packageManager = getPackageManager();
+                        mPreview.setFlash(packageManager, false);
+                        flashModeButton.setBackgroundResource(R.drawable.ic_flash_off_24dp);
+                        mFlashMode = false;
+                    }
+
+                }
+            });
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
         //Activity in component
         hide_nav.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -114,42 +128,61 @@ public class CustomCamera extends AppCompatActivity {
                 hideSystemUI();
             }
         });
-        if(click==true) {
+        try {
             captureButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (click == true) {
-                        hide_nav.setVisibility(View.VISIBLE);
-                        click = false;
-                        mCamera.takePicture(null, null, mPicture);
-                        progressDoalog = new ProgressDialog(CustomCamera.this);
-                        progressDoalog.setMax(100);
-                        progressDoalog.setTitle("Image is processing, please wait!!!");
-                        progressDoalog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-                        progressDoalog.show();
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    while (processing ==false) {
-                                        Thread.sleep(70);
-                                        hideSystemUI();
-                                        PackageManager packageManager = getPackageManager();
-                                        mPreview.setFlash(packageManager, false);
-                                        flashModeButton.setBackgroundResource(R.drawable.ic_flash_off_24dp);
-                                        mFlashMode=false;
-                                        handle.sendMessage(handle.obtainMessage());
-                                        if (processing ==true) {
-                                            progressDoalog.dismiss();
-                                        }
-                                    }
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
+                    try {
+                        if (click == true) {
+                            mCamera.takePicture(null, null, mPicture);
+                            hide_nav.setVisibility(View.VISIBLE);
+                            captureButton.setVisibility(View.VISIBLE);
+                            // mis-clicking prevention, using threshold of 1000 ms
+                            if (SystemClock.elapsedRealtime() - mLastClickTime < 60000){
+                                return;
                             }
-                        }).start();
+                            mLastClickTime = SystemClock.elapsedRealtime();
+                            click = false;
+                            progressDoalog = new ProgressDialog(CustomCamera.this);
+                            progressDoalog.setMax(100);
+                            progressDoalog.setTitle("Image is processing, please wait!!!");
+                            progressDoalog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                            progressDoalog.setCancelable(false);
+                            progressDoalog.setCanceledOnTouchOutside(false);
+                            progressDoalog.show();
+                            new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        while (processing == false) {
+                                            try {
+                                                Thread.sleep(10);
+                                                hideSystemUI();
+                                                PackageManager packageManager = getPackageManager();
+                                                mPreview.setFlash(packageManager, false);
+                                                flashModeButton.setBackgroundResource(R.drawable.ic_flash_off_24dp);
+                                                mFlashMode = false;
+                                                handle.sendMessage(handle.obtainMessage());
+                                                if (processing == true) {
+                                                    progressDoalog.dismiss();
+                                                }
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
+                                            }
+                                        }
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            }).start();
+                        }
                     }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
+
                 }
+
                 Handler handle = new Handler() {
                     @Override
                     public void handleMessage(Message msg) {
@@ -159,13 +192,20 @@ public class CustomCamera extends AppCompatActivity {
                 };
             });
         }
-
-        if(click==true) {
+        catch (Exception e){
+            e.printStackTrace();
+        }
+        try {
             btn_back.setOnClickListener(new View.OnClickListener() {
 
                 @Override
                 public void onClick(View v) {
                     if (click == true) {
+                        // mis-clicking prevention, using threshold of 1000 ms
+                        if (SystemClock.elapsedRealtime() - mLastClickTime < 2000){
+                            return;
+                        }
+                        mLastClickTime = SystemClock.elapsedRealtime();
                         hide_nav.setVisibility(View.VISIBLE);
                         click = false;
                         Intent intent = new Intent(CustomCamera.this, SubmitIdTest.class);
@@ -174,20 +214,12 @@ public class CustomCamera extends AppCompatActivity {
                 }
             });
         }
+        catch (Exception e){
+            e.printStackTrace();
+        }
     }
     //Processing
-    //Flash
-    public boolean setFlash(boolean stateFlash) {
-        PackageManager pm = getPackageManager();
-        if (pm.hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH)) {
-            Camera.Parameters par = mCamera.getParameters();
-            par.setFlashMode(stateFlash ? Camera.Parameters.FLASH_MODE_TORCH : Camera.Parameters.FLASH_MODE_OFF);
-            mCamera.setParameters(par);
-            Log.d(TAG, "flash: " + (stateFlash ? "on" : "off"));
-            return stateFlash;
-        }
-        return false;
-    }
+
     //=========
     private void hideSystemUI() {
         // Set the IMMERSIVE flag.
@@ -220,16 +252,21 @@ public class CustomCamera extends AppCompatActivity {
 
         @Override
         public void onPictureTaken(byte[] data, Camera camera) {
-            android.hardware.Camera.Size pictureSize = camera.getParameters().getPictureSize();
-
-            Log.e(TAG, "onPictureTaken - received image " + pictureSize.width + "x" + pictureSize.height);
-            inputImg = new Mat(new Size(pictureSize.width, pictureSize.height), CvType.CV_8U);
-            inputImg = Imgcodecs.imdecode(new MatOfByte(data), Imgcodecs.CV_LOAD_IMAGE_UNCHANGED);
-            Log.e(TAG, "inputImage size:" + inputImg.size().toString());
-
             try {
-                ButtonProcess();
-            } catch (IOException e) {
+                android.hardware.Camera.Size pictureSize = camera.getParameters().getPictureSize();
+
+                Log.e(TAG, "onPictureTaken - received image " + pictureSize.width + "x" + pictureSize.height);
+                inputImg = new Mat(new Size(pictureSize.width, pictureSize.height), CvType.CV_8U);
+                inputImg = Imgcodecs.imdecode(new MatOfByte(data), Imgcodecs.CV_LOAD_IMAGE_UNCHANGED);
+                Log.e(TAG, "inputImage size:" + inputImg.size().toString());
+
+                try {
+                    ButtonProcess();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            catch (Exception e){
                 e.printStackTrace();
             }
         }
@@ -251,56 +288,65 @@ public class CustomCamera extends AppCompatActivity {
 
     /////================================================
     public void ButtonProcess() throws IOException {
-        Log.e(TAG,"captureButton: Click");
+        try {
+            Log.e(TAG, "captureButton: Click");
 //        processedImage = Process(inputImage);
 
-        try {
-            processedImage = Process(inputImg);
-            Log.e("Size of processedImage:", processedImage.size().toString());
-        } catch (IOException e) {
+            try {
+                processedImage = Process(inputImg);
+                Log.e("Size of processedImage:", processedImage.size().toString());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            // send processed Image, isProcessed, resultAnswer
+            intentCheckPicture = new Intent(CustomCamera.this, CheckPicture.class);
+
+            long Mat_Image = processedImage.getNativeObjAddr();
+            Log.e(TAG, "mat img: Click" + Mat_Image);
+
+            intentCheckPicture.putExtra("mat_image", Mat_Image);
+            intentCheckPicture.putExtra("arrResultAnswer", arrResultAnswer);
+            intentCheckPicture.putExtra("isProcessed", isProcessed);
+
+            Log.e(TAG, "captureButton: Done");
+            startActivity(intentCheckPicture);
+        }
+        catch (Exception e){
             e.printStackTrace();
         }
-
-        // send processed Image, isProcessed, resultAnswer
-        intentCheckPicture = new Intent(CustomCamera.this, CheckPicture.class);
-
-        long Mat_Image = processedImage.getNativeObjAddr();
-        Log.e(TAG,"mat img: Click" + Mat_Image);
-
-        intentCheckPicture.putExtra("mat_image", Mat_Image);
-        intentCheckPicture.putExtra("arrResultAnswer", arrResultAnswer);
-        intentCheckPicture.putExtra("isProcessed", isProcessed);
-
-        Log.e(TAG,"captureButton: Done");
-        startActivity(intentCheckPicture);
     }
 
-    public Mat Process(Mat img) throws IOException{
-        Log.e("Show input image size", img.size().toString());
-        Mat I_temp = new Mat();
+    public Mat Process(Mat img) throws IOException {
+        try {
+            Log.e("Show input image size", img.size().toString());
+            Mat I_temp = new Mat();
 
-        // process image take to camera
-        I_temp = scanner.DetectROI(img);
+            // process image take to camera
+            I_temp = scanner.DetectROI(img);
 
 //        Log.e(TAG, "GetSquare " + scanner.GetSquare().toString());
-        isProcessed = scanner.AlignProcess();
-        if(isProcessed==false){
-            DFragment alertdFragment = new DFragment();
-            alertdFragment.show(fm, "Image wasn't processed. Please, come back take picture!!");
+            isProcessed = scanner.AlignProcess();
+            if (isProcessed == false) {
+                DFragment alertdFragment = new DFragment();
+                alertdFragment.show(fm, "Image wasn't processed. Please, come back take picture!!");
+            }
+            Log.e(TAG, "isProcessed " + isProcessed);
+
+            arrResultAnswer = scanner.GetAnswers().toString().toCharArray(); // String result frome array char
+            Log.e(TAG, "resultAnswer " + arrResultAnswer);
+
+            Log.e("Show size i_temp", I_temp.size().toString());
+            Log.e("Show size item", scanner.GetResultAlign().size().toString());
+
+            I_temp = scanner.GetResultAlign();
+            processing = true;
+            return I_temp;
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        Log.e(TAG, "isProcessed " + isProcessed);
-
-        arrResultAnswer = scanner.GetAnswers().toString().toCharArray(); // String result frome array char
-        Log.e(TAG, "resultAnswer " + arrResultAnswer);
-
-        Log.e("Show size i_temp", I_temp.size().toString());
-        Log.e("Show size item", scanner.GetResultAlign().size().toString());
-
-        I_temp = scanner.GetResultAlign();
-        processing =true;
-        return I_temp;
+        return img;
     }
-
     private void LoadTemplate(){
         Log.e(TAG, "Load Template");
         try {
@@ -320,7 +366,7 @@ public class CustomCamera extends AppCompatActivity {
             }
             Log.e(TAG, "I_templates size: " + I_templates.size().toString());
 
-//            scanner.LoadTemplate(I_templates);
+            scanner.LoadTemplate(I_templates);
 
             Log.e(TAG, "Finish");
 

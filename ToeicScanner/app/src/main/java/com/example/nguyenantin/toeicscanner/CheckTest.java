@@ -1,5 +1,6 @@
 package com.example.nguyenantin.toeicscanner;
 
+import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -33,9 +34,9 @@ public class CheckTest extends AppCompatActivity {
     private static  String TAG = "CheckTest";
 
     private char[] arrResultAnswer;
-    private boolean onClick = true;
     private int[] standardReadingScore;
     private int[] standardListeningScore;
+    private long mLastClickTime = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,26 +52,48 @@ public class CheckTest extends AppCompatActivity {
         btn_ok = (Button) findViewById(R.id.btn_ok);
         hide_nav = (LinearLayout) findViewById(R.id.hide_nav);
         // get data from camera
-        getExtra();
+        try {
+            getExtra();
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
         // Activity in component
-        hide_nav.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                hideSystemUI();
-            }
-        });
-        if(onClick==true) {
+        try {
+            hide_nav.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    hideSystemUI();
+                }
+            });
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        try {
             btn_ok.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (onClick == true) {
-                        onClick = false;
+                    try {
+                        // mis-clicking prevention, using threshold of 1000 ms
+                        if (SystemClock.elapsedRealtime() - mLastClickTime < 2000){
+                            return;
+                        }
+                        mLastClickTime = SystemClock.elapsedRealtime();
+                        btn_ok.setVisibility(View.VISIBLE);
                         hide_nav.setVisibility(View.VISIBLE);
+                        hide_nav.setEnabled(false);
+                        btn_ok.setEnabled(false);
                         Intent intentMain = new Intent(CheckTest.this, CustomCamera.class);
                         startActivity(intentMain);
                     }
+                    catch (Exception e){
+                        e.printStackTrace();
+                    }
                 }
             });
+        }
+        catch (Exception e){
+            e.printStackTrace();
         }
 
         lvResult = (ListView) findViewById(R.id.ls_result);
@@ -90,7 +113,7 @@ public class CheckTest extends AppCompatActivity {
         txt_crlisten.setText(String.valueOf(count_correct_listen));
         txt_total_listen.setText(String.valueOf(standardListeningScore[count_correct_listen]));
         txt_sum.setText(String.valueOf(standardReadingScore[count_correct_read] +
-                                        standardListeningScore[count_correct_listen]));
+                standardListeningScore[count_correct_listen]));
     }
 
     //hide system navigation
@@ -109,13 +132,13 @@ public class CheckTest extends AppCompatActivity {
                         | View.SYSTEM_UI_FLAG_IMMERSIVE);
     }
     // extra results
-    public void getExtra(){
+    private void getExtra(){
         arrResultAnswer = getIntent().getCharArrayExtra("arrResultAnswer");
     }
     //Create result emty
     private void createArrEmpty(String [] temp){
         for(int i=0;i<temp.length;i++){
-           temp[i]="X";
+            temp[i]="X";
         }
     }
     ///====================================
@@ -164,7 +187,7 @@ public class CheckTest extends AppCompatActivity {
                     count_correct_listen++;
                 }
             }
-    }
+        }
         adapterResult.notifyDataSetChanged();
     }
     private String[] Chuanhoachuoi(char[] a){

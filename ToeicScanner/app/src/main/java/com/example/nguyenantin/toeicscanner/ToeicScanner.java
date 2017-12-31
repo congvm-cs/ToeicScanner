@@ -1,6 +1,5 @@
 package com.example.nguyenantin.toeicscanner;
 
-
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -12,16 +11,17 @@ import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.core.TermCriteria;
 import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.CLAHE;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.utils.Converters;
 import org.opencv.video.Video;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import static java.lang.Math.max;
 import static java.lang.Math.sqrt;
-import static org.opencv.imgproc.Imgproc.adaptiveThreshold;
 import static org.opencv.imgproc.Imgproc.equalizeHist;
 import static org.opencv.imgproc.Imgproc.getStructuringElement;
 import static org.opencv.imgproc.Imgproc.line;
@@ -44,22 +44,39 @@ public class ToeicScanner {
     private MatOfPoint approxf1 = new MatOfPoint();		// store largest contour Points
     private List<Character> answers = new ArrayList<>();               // store bubble answer from paper
     private int choosenThreshold = 150;
-    Mat resultAlign = new Mat();
+    private double approxDistance;
+    private Mat resultAlign = new Mat();
     //============================================================================================//
     public List<Character> GetAnswers(){
         return this.answers;
+    };
+
+    public Point[]  GetSquares() {
+        return (Point[])this.squares.toArray();
     };
 
     public Mat GetResultAlign(){
         return this.resultAlign;
     };
 
+
+    private Mat ClaheConfig(Mat inputImage) {
+        List<Mat> channels = new ArrayList<>();
+        Core.split(inputImage, channels);
+        CLAHE clahe = Imgproc.createCLAHE();
+        Mat destImage = new Mat(inputImage.height(),inputImage.width(), CvType.CV_8UC4);
+        clahe.apply(channels.get(0), destImage);
+        Core.merge(channels, inputImage);
+        return inputImage;
+    }
+
     public boolean AlignProcess() {
         try {
             resultAlign = this.Align(this.drawRoiImage);
-
-            resultAlign = this.DrawVerticalGrid(resultAlign, false);
-            resultAlign = this.DrawHorizontalGrid(resultAlign, false);
+//    		Imgcodecs.imwrite("Hi5.png", resultAlign);
+            resultAlign = this.ImageRegistration(resultAlign);
+            resultAlign = this.DrawVerticalGrid(resultAlign, true);
+            resultAlign = this.DrawHorizontalGrid(resultAlign, true);
 
             this.DetectAnswer(resultAlign);
             resultAlign = this.DrawCircle(resultAlign);
@@ -71,7 +88,7 @@ public class ToeicScanner {
     }
 
     public Mat DetectROI(Mat img){
-//		this.LoadTemplate();
+//        this.LoadTemplate();
         this.LoadInputImage(img);
         Mat result = new Mat();
         this.drawRoiImage = this.Preprocess(this.inputImage);
@@ -79,10 +96,13 @@ public class ToeicScanner {
         return result;
     };
 
-    private void LoadTemplate(){
-        Mat template_temp = Imgcodecs.imread("/media/vmc/Data/VMC/Workspace/Toeic-Scanner/Scanner/assets/templates/T2.jpg");
+    public void LoadTemplate(Mat template_temp){
+//        Mat template_temp = Imgcodecs.imread("/home/vmc/Desktop/Hello/template.jpg");
         resize(template_temp, template_temp, new Size(1280, 768));
         Imgproc.cvtColor(template_temp, template_temp, Imgproc.COLOR_BGR2GRAY);
+        template_temp = ClaheConfig(template_temp);
+//	    equalizeHist(template_temp, template_temp);
+//	    Imgcodecs.imwrite("template.png", template_temp);
         this.templateImage = template_temp;
     };
 
@@ -140,7 +160,7 @@ public class ToeicScanner {
         // 	For each contour found
         MatOfPoint2f approx = new MatOfPoint2f();
         //Processing on mMOP2f1 which is in type MatOfPoint2f
-        double approxDistance = Imgproc.arcLength(new MatOfPoint2f(contours.get(indexContour).toArray()), true)*0.02;
+        approxDistance = Imgproc.arcLength(new MatOfPoint2f(contours.get(indexContour).toArray()), true)*0.02;
         Imgproc.approxPolyDP(new MatOfPoint2f(contours.get(indexContour).toArray()), approx, approxDistance, true);
 
 
@@ -148,7 +168,7 @@ public class ToeicScanner {
         {
             approx.convertTo(this.approxf1, CvType.CV_32S);
             this.squares.add(this.approxf1);
-            System.out.println(this.squares);
+//        	System.out.println(this.squares);
         }
 
         Imgproc.polylines(this.colorInputImage, this.squares, true, new Scalar(0, 255, 0), 4);
@@ -281,9 +301,9 @@ public class ToeicScanner {
 
         // Resize to Approriate Size
         resize(alignImage, alignImage, new Size(1280, 768));
+        alignImage = ClaheConfig(alignImage);
         equalizeHist(alignImage, alignImage);
-//        adaptiveThreshold(alignImage, alignImage, 255, Imgproc.ADAPTIVE_THRESH_MEAN_C, Imgproc.THRESH_BINARY, 15, 40);
-//        Imgproc.threshold(alignImage, alignImage, 100, 255, Imgproc.THRESH_BINARY_INV);
+
         return alignImage;
     };
 
@@ -296,11 +316,11 @@ public class ToeicScanner {
         Mat warp_matrix = Mat.eye(2, 3, CvType.CV_32FC1);
 
         // Specify the number of iterations.
-        int number_of_iterations = 50;
+        int number_of_iterations = 200;
 
         // Specify the threshold of the increment
         // in the correlation coefficient between two iterations
-        double termination_eps = 0.0001;
+        double termination_eps = 0.001;
 
         // Define termination criteria
         TermCriteria criteria = new TermCriteria(TermCriteria.COUNT + TermCriteria.EPS, number_of_iterations, termination_eps);
@@ -318,9 +338,9 @@ public class ToeicScanner {
     }
 
     private Mat DrawVerticalGrid(Mat img, boolean isDraw){
-        int colAxis = 146;
+        int colAxis = 135;
         int colRange = 57;
-        int colWidth[] = {114, 110, 113, 113, 112, 112, 112, 113, 113, 112};
+        int colWidth[] = {115, 114, 118, 115, 114, 112, 116, 117, 116, 112};
         for(int colIndex = 0; colIndex < 10; colIndex++)
         {
             List<Double> cols = linspace(colAxis, colAxis + colRange, 4);
@@ -340,12 +360,14 @@ public class ToeicScanner {
     };
 
     private Mat DrawHorizontalGrid(Mat img, boolean isDraw){
-        int rowAxis = 213;
-        int rowRange = 180;
-        int[] rowWidth = {250, 0};
+        int rowAxis = 204;
+        int rowRange = 185;
+        int[] rowWidth = {260, 1};
         for(int rowIndex = 0; rowIndex < 2; rowIndex++)
         {
+//        	if (rowIndex =)
             List<Double> rows = linspace(rowAxis, rowAxis + rowRange, 10);
+            System.out.println(rows.size());
             for(int i = 0; i < rows.size(); i++)
             {
                 this.yGrid.add(rows.get(i).intValue());

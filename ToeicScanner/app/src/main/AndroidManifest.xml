@@ -3,27 +3,19 @@
     package="com.example.nguyenantin.toeicscanner">
 
     <uses-permission android:name="android.permission.CAMERA"
-        android:required="false" />
+        android:required="true" />
     <uses-feature
         android:name="android.hardware.camera"
-        android:required="false" />
+        android:required="true" />
     <uses-feature
         android:name="android.hardware.camera.autofocus"
-        android:required="false" />
+        android:required="true" />
     <uses-feature
         android:name="android.hardware.camera.front"
-        android:required="false" />
+        android:required="true" />
     <uses-feature
         android:name="android.hardware.camera.front.autofocus"
-        android:required="false" />
-
-    <!-- OpenCV camera config -->
-    <supports-screens
-        android:anyDensity="true"
-        android:largeScreens="true"
-        android:normalScreens="true"
-        android:resizeable="true"
-        android:smallScreens="true" />
+        android:required="true" />
 
     <!-- App config -->
     <application

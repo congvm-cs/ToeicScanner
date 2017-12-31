@@ -10,7 +10,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.view.View;
-import android.widget.LinearLayout;
 
 public class DFragment extends DialogFragment {
     private boolean onClick = true;
@@ -28,11 +27,16 @@ public class DFragment extends DialogFragment {
                 // Positive button
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        if(onClick==true) {
-                            // Do something else
-                            onClick=false;
-                            Intent intent = new Intent(getContext(), CustomCamera.class);
-                            startActivity(intent);
+                        try {
+                            if (onClick == true) {
+                                // Do something else
+                                onClick = false;
+                                Intent intent = new Intent(getContext(), CustomCamera.class);
+                                startActivity(intent);
+                            }
+                        }
+                        catch (Exception e){
+                            e.printStackTrace();
                         }
                     }
                 }).create();
