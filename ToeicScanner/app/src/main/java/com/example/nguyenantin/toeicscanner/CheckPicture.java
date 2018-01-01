@@ -36,6 +36,7 @@ public class CheckPicture extends AppCompatActivity {
     private boolean click=true;
 
     @Override
+
     protected void onCreate(Bundle savedInstanceState) {
         hideSystemUI();
         super.onCreate(savedInstanceState);
@@ -61,12 +62,16 @@ public class CheckPicture extends AppCompatActivity {
             // Show Alert DialogFragment
             alertdFragment.show(fm, "Image wasn't processed. Please, come back take picture!!");
         }
-        hide_nav.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                hideSystemUI();
-            }
-        });
+        try {
+            hide_nav.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    hideSystemUI();
+                }
+            });
+        }catch (Exception e){
+            e.printStackTrace();
+        }
         try {
             btn_next.setOnClickListener(new View.OnClickListener() {
                 @Override

@@ -57,36 +57,39 @@ public class ApdaterResult extends ArrayAdapter<Result> {
     @NonNull
     @Override
     public View getView(int position, View convertView, @NonNull ViewGroup parent) {
-        LayoutInflater inflater = this.context.getLayoutInflater();
-        View row = inflater.inflate(this.resource,null);
-        TextView txtSTT = (TextView) row.findViewById(R.id.txt_stt);
-        TextView txtResult = (TextView) row.findViewById(R.id.txt_result);
-        TextView txtResult2 = (TextView) row.findViewById(R.id.txt_user);
 
-        final Result result = this.objects.get(position);
-        txtSTT.setText(result.getStt());
-        txtResult.setText(result.getResult());
-        txtResult2.setText(result.getResult2());
+            LayoutInflater inflater = this.context.getLayoutInflater();
+            View row = inflater.inflate(this.resource, null);
+            TextView txtSTT = (TextView) row.findViewById(R.id.txt_stt);
+            TextView txtResult = (TextView) row.findViewById(R.id.txt_result);
+            TextView txtResult2 = (TextView) row.findViewById(R.id.txt_user);
 
-        if (Integer.parseInt(txtSTT.getText().toString())>=100 && !txtResult.getText().equals(txtResult2.getText().toString())){
-            txtResult.setBackgroundResource(R.drawable.textincorrect);
-            txtResult2.setBackgroundResource(R.drawable.textincorrect);
-            txtResult2.setTextColor(Color.WHITE);
-            txtResult.setTextColor(Color.WHITE);
+            final Result result = this.objects.get(position);
+            txtSTT.setText(result.getStt());
+            txtResult.setText(result.getResult());
+            txtResult2.setText(result.getResult2());
+        try {
+            if (Integer.parseInt(txtSTT.getText().toString()) >= 100 && !txtResult.getText().equals(txtResult2.getText().toString())) {
+                txtResult.setBackgroundResource(R.drawable.textincorrect);
+                txtResult2.setBackgroundResource(R.drawable.textincorrect);
+                txtResult2.setTextColor(Color.WHITE);
+                txtResult.setTextColor(Color.WHITE);
 
-        } else if(Integer.parseInt(txtSTT.getText().toString())<100 && !txtResult.getText().equals(txtResult2.getText().toString())){
-            txtResult.setBackgroundResource(R.drawable.textincorrect);
-            txtResult2.setBackgroundResource(R.drawable.textincorrect);
-            txtResult2.setTextColor(Color.WHITE);
-            txtResult.setTextColor(Color.WHITE);
+            } else if (Integer.parseInt(txtSTT.getText().toString()) < 100 && !txtResult.getText().equals(txtResult2.getText().toString())) {
+                txtResult.setBackgroundResource(R.drawable.textincorrect);
+                txtResult2.setBackgroundResource(R.drawable.textincorrect);
+                txtResult2.setTextColor(Color.WHITE);
+                txtResult.setTextColor(Color.WHITE);
+            } else if (Integer.parseInt(txtSTT.getText().toString()) < 100 && txtResult.getText().equals(txtResult2.getText().toString())) {
+                txtResult.setBackgroundResource(R.drawable.text);
+                txtResult2.setBackgroundResource(R.drawable.text);
+            } else if (Integer.parseInt(txtSTT.getText().toString()) >= 100 && txtResult.getText().equals(txtResult2.getText().toString())) {
+                txtResult.setBackgroundResource(R.drawable.text);
+                txtResult2.setBackgroundResource(R.drawable.text);
+            }
         }
-        else if(Integer.parseInt(txtSTT.getText().toString())<100 && txtResult.getText().equals(txtResult2.getText().toString())){
-            txtResult.setBackgroundResource(R.drawable.text);
-            txtResult2.setBackgroundResource(R.drawable.text);
-        }
-        else if(Integer.parseInt(txtSTT.getText().toString())>=100 && txtResult.getText().equals(txtResult2.getText().toString())){
-            txtResult.setBackgroundResource(R.drawable.text);
-            txtResult2.setBackgroundResource(R.drawable.text);
+        catch (Exception e){
+            e.printStackTrace();
         }
         return row;
     }

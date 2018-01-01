@@ -97,7 +97,6 @@ public class ToeicScanner {
     };
 
     public void LoadTemplate(Mat template_temp){
-//        Mat template_temp = Imgcodecs.imread("/home/vmc/Desktop/Hello/template.jpg");
         resize(template_temp, template_temp, new Size(1280, 768));
         Imgproc.cvtColor(template_temp, template_temp, Imgproc.COLOR_BGR2GRAY);
         template_temp = ClaheConfig(template_temp);

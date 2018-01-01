@@ -31,6 +31,7 @@ public class CheckTest extends AppCompatActivity {
     private TextView txt_total_listen;
     private TextView  txt_sum;
     private LinearLayout hide_nav;
+    private boolean isClicked = true;
     private static  String TAG = "CheckTest";
 
     private char[] arrResultAnswer;
@@ -74,17 +75,20 @@ public class CheckTest extends AppCompatActivity {
                 @Override
                 public void onClick(View v) {
                     try {
-                        // mis-clicking prevention, using threshold of 1000 ms
-                        if (SystemClock.elapsedRealtime() - mLastClickTime < 2000){
-                            return;
+                        if(isClicked==true) {
+                            btn_ok.setVisibility(View.VISIBLE);
+                            hide_nav.setVisibility(View.VISIBLE);
+                            hide_nav.setEnabled(false);
+                            btn_ok.setEnabled(false);
+                            // mis-clicking prevention, using threshold of 1000 ms
+                            if (SystemClock.elapsedRealtime() - mLastClickTime < 2000) {
+                                return;
+                            }
+                            mLastClickTime = SystemClock.elapsedRealtime();
+                            Intent intentMain = new Intent(CheckTest.this, CustomCamera.class);
+                            startActivity(intentMain);
+                            isClicked = false;
                         }
-                        mLastClickTime = SystemClock.elapsedRealtime();
-                        btn_ok.setVisibility(View.VISIBLE);
-                        hide_nav.setVisibility(View.VISIBLE);
-                        hide_nav.setEnabled(false);
-                        btn_ok.setEnabled(false);
-                        Intent intentMain = new Intent(CheckTest.this, CustomCamera.class);
-                        startActivity(intentMain);
                     }
                     catch (Exception e){
                         e.printStackTrace();
