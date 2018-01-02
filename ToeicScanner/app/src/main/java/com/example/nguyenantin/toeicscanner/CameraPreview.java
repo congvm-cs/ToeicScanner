@@ -24,16 +24,22 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
     public CameraPreview(Context context, Camera camera) {
         super(context);
-        mCamera = camera;
+        try {
+            mCamera = camera;
 //        camera.setZoomChangeListener(1,false,mCamera);
-        // Install a SurfaceHolder.Callback so we get notified when the
-        // underlying surface is created and destroyed.
-        mHolder = getHolder();
-        mHolder.addCallback(this);
-        // deprecated setting, but required on Android versions prior to 3.0
-        mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-        setFocusable(true);
-        setFocusableInTouchMode(true);
+            // Install a SurfaceHolder.Callback so we get notified when the
+            // underlying surface is created and destroyed.
+            mHolder = getHolder();
+            mHolder.addCallback(this);
+            // deprecated setting, but required on Android versions prior to 3.0
+            mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+            setFocusable(true);
+            setFocusableInTouchMode(true);
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
     }
 
     public void surfaceCreated(SurfaceHolder holder) {
@@ -45,13 +51,18 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         } catch (IOException e) {
             Log.d(TAG, "Error setting camera preview: " + e.getMessage());
         }
-        // The Surface has been created, now tell the camera where to draw the preview.
-        Camera.Parameters params = mCamera.getParameters();
-        // set the focus mode
-        params.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
-        //*EDIT*//params.setFocusMode("continuous-picture");
-        //It is better to use defined constraints as opposed to String, thanks to AbdelHady
-        params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+        try {
+            // The Surface has been created, now tell the camera where to draw the preview.
+            Camera.Parameters params = mCamera.getParameters();
+            // set the focus mode
+            params.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
+            //*EDIT*//params.setFocusMode("continuous-picture");
+            //It is better to use defined constraints as opposed to String, thanks to AbdelHady
+            params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     public void surfaceDestroyed(SurfaceHolder holder) {
