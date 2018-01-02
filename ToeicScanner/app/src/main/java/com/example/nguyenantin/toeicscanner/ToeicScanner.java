@@ -46,19 +46,34 @@ public class ToeicScanner {
     private int choosenThreshold = 150;
     private double approxDistance;
     private Mat resultAlign = new Mat();
+    private MatOfPoint2f squarePoints = new MatOfPoint2f();  // store points of squares (bounding box)
+
     //============================================================================================//
+    public void Reset(){
+        inputImage = null;                   // store configured input image
+        colorInputImage = null;                // store configured input image with color
+        templateImage = null;                  // store configured template image
+        drawRoiImage = null;
+        squares = null;  // store points of squares (bounding box)
+        xGrid = null;                  		// store bubble answer by x axis
+        yGrid = null;          		// store bubble answer by y axis
+        approxf1 = null;		// store largest contour Points
+        answers = null;               // store bubble answer from paper
+        resultAlign =null;
+        squarePoints = null;
+    }
+
     public List<Character> GetAnswers(){
         return this.answers;
-    };
-
-    public Point[]  GetSquares() {
-        return (Point[])this.squares.toArray();
     };
 
     public Mat GetResultAlign(){
         return this.resultAlign;
     };
 
+    public Point[]  GetSquares() {
+        return (Point[])this.squarePoints.toArray();
+    };
 
     private Mat ClaheConfig(Mat inputImage) {
         List<Mat> channels = new ArrayList<>();
@@ -75,8 +90,8 @@ public class ToeicScanner {
             resultAlign = this.Align(this.drawRoiImage);
 //    		Imgcodecs.imwrite("Hi5.png", resultAlign);
             resultAlign = this.ImageRegistration(resultAlign);
-            resultAlign = this.DrawVerticalGrid(resultAlign, true);
-            resultAlign = this.DrawHorizontalGrid(resultAlign, true);
+            resultAlign = this.DrawVerticalGrid(resultAlign, false);
+            resultAlign = this.DrawHorizontalGrid(resultAlign, false);
 
             this.DetectAnswer(resultAlign);
             resultAlign = this.DrawCircle(resultAlign);
@@ -97,12 +112,10 @@ public class ToeicScanner {
     };
 
     public void LoadTemplate(Mat template_temp){
-//        Mat template_temp = Imgcodecs.imread("/home/vmc/Desktop/Hello/template.jpg");
         resize(template_temp, template_temp, new Size(1280, 768));
         Imgproc.cvtColor(template_temp, template_temp, Imgproc.COLOR_BGR2GRAY);
-        template_temp = ClaheConfig(template_temp);
-//	    equalizeHist(template_temp, template_temp);
-//	    Imgcodecs.imwrite("template.png", template_temp);
+//        template_temp = ClaheConfig(template_temp);
+        equalizeHist(template_temp, template_temp);
         this.templateImage = template_temp;
     };
 
@@ -166,16 +179,15 @@ public class ToeicScanner {
 
         if(approx.toArray().length == 4)
         {
+            squarePoints = approx;
             approx.convertTo(this.approxf1, CvType.CV_32S);
             this.squares.add(this.approxf1);
-//        	System.out.println(this.squares);
         }
 
         Imgproc.polylines(this.colorInputImage, this.squares, true, new Scalar(0, 255, 0), 4);
 
         for(int i = 0; i < this.approxf1.total(); i++)
         {
-            System.out.println(this.approxf1.get(i, 0));
             Imgproc.circle(this.colorInputImage, new Point(this.approxf1.get(i, 0)), 15, new  Scalar(0, 0, 255), 2);
             Imgproc.circle(this.colorInputImage, new Point(this.approxf1.get(i, 0)), 5,new  Scalar(0, 0, 255), -1);
         }
@@ -301,8 +313,8 @@ public class ToeicScanner {
 
         // Resize to Approriate Size
         resize(alignImage, alignImage, new Size(1280, 768));
-        alignImage = ClaheConfig(alignImage);
-        equalizeHist(alignImage, alignImage);
+//        alignImage = ClaheConfig(alignImage);
+//        equalizeHist(alignImage, alignImage);
 
         return alignImage;
     };
@@ -333,6 +345,8 @@ public class ToeicScanner {
 
         // Threshold image
         equalizeHist(im2_aligned, im2_aligned);
+        im2_aligned = ClaheConfig(im2_aligned);
+//        im2_aligned.convertTo(im2_aligned, -1, 10d * 20 / 100, 0);
 
         return im2_aligned;
     }
