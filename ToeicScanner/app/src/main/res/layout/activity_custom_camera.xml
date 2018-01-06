@@ -31,6 +31,9 @@
                 android:layout_alignParentTop="true"
                 android:layout_weight="1"
                 android:layout_centerHorizontal="true">
+                <SurfaceView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
                 <ProgressBar
                     android:layout_width="20dp"
                     android:visibility="gone"

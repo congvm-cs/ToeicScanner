@@ -23,7 +23,7 @@ public class DFragment extends DialogFragment {
                 .setTitle("Process Image Error!")
                 // Set Dialog Message
                 .setMessage("Cannot detect ROI or Not a TOEIC test")
-
+                .setCancelable(false)
                 // Positive button
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {

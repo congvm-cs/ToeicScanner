@@ -19,14 +19,6 @@ public class Result
         this.result2 = result2;
         this.stt = stt;
     }
-//    public Result(JSONObject object) {
-//        try {
-//            this.id = object.getString("made");
-//            this.result = object.getString("result");
-//        } catch (JSONException e) {
-//            e.printStackTrace();
-//        }
-//    }
 
     public Result(String result) {
         this.result = result;

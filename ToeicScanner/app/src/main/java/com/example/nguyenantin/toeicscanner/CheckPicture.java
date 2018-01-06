@@ -34,9 +34,7 @@ public class CheckPicture extends AppCompatActivity {
     }
     private Intent intent;
     private boolean click=true;
-
     @Override
-
     protected void onCreate(Bundle savedInstanceState) {
         hideSystemUI();
         super.onCreate(savedInstanceState);
@@ -208,7 +206,6 @@ public class CheckPicture extends AppCompatActivity {
             e.printStackTrace();
         }
     }
-
 
     //Convert bitmap from mat
     private Bitmap convertMattoBitmap(Mat mat) {

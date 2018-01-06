@@ -4,12 +4,17 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import android.Manifest;
+import android.annotation.TargetApi;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+<<<<<<< Updated upstream
+=======
+import android.os.Build;
+>>>>>>> Stashed changes
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -24,13 +29,13 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.support.v7.app.AppCompatActivity;
-import org.opencv.android.OpenCVLoader;
-import org.opencv.android.Utils;
-import org.opencv.core.CvType;
 import android.hardware.Camera;
 import android.hardware.Camera.PictureCallback;
 import android.widget.Toast;
 
+import org.opencv.android.OpenCVLoader;
+import org.opencv.android.Utils;
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
 import org.opencv.core.Scalar;
@@ -67,13 +72,18 @@ public class CustomCamera extends AppCompatActivity {
     private char[] arrResultAnswer;
     private boolean isProcessed = false;    // check align process
 
+<<<<<<< Updated upstream
 
+=======
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
+>>>>>>> Stashed changes
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         hideSystemUI();
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_custom_camera);
+<<<<<<< Updated upstream
 
         try {
             LoadTemplate();
@@ -81,6 +91,9 @@ public class CustomCamera extends AppCompatActivity {
         catch (Exception e){
             e.printStackTrace();
         }
+=======
+        //
+>>>>>>> Stashed changes
         // permission camera
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                 == PackageManager.PERMISSION_DENIED)
@@ -148,11 +161,16 @@ public class CustomCamera extends AppCompatActivity {
                             hide_nav.setVisibility(View.VISIBLE);
                             captureButton.setVisibility(View.VISIBLE);
                             // mis-clicking prevention, using threshold of 1000 ms
+<<<<<<< Updated upstream
                             if (SystemClock.elapsedRealtime() - mLastClickTime < 60000){
+=======
+                            if (SystemClock.elapsedRealtime() - mLastClickTime < 3000){
+>>>>>>> Stashed changes
                                 return;
                             }
                             mLastClickTime = SystemClock.elapsedRealtime();
                             click = false;
+<<<<<<< Updated upstream
                             progressDialog = new ProgressDialog(CustomCamera.this);
                             progressDialog.setMax(100);
                             progressDialog.setTitle("Image is processing, please wait!");
@@ -161,6 +179,16 @@ public class CustomCamera extends AppCompatActivity {
                             progressDialog.setCanceledOnTouchOutside(false);
                             progressDialog.show();
 
+=======
+                            progressDoalog = new ProgressDialog(CustomCamera.this);
+                            progressDoalog.setMax(100);
+                            progressDoalog.setTitle("Image is processing, please wait!!!");
+                            progressDoalog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                            progressDoalog.setCancelable(false);
+                            progressDoalog.setCanceledOnTouchOutside(false);
+                            progressDoalog.show();
+                            final PackageManager packageManager = getPackageManager();
+>>>>>>> Stashed changes
                             new Thread(new Runnable() {
                                 @Override
                                 public void run() {
@@ -175,11 +203,26 @@ public class CustomCamera extends AppCompatActivity {
 
                                                 mFlashMode = false;
                                                 handle.sendMessage(handle.obtainMessage());
+<<<<<<< Updated upstream
                                                 if (processing == true) {
                                                     progressDialog.dismiss();
+=======
+                                                if (processing == true){
+                                                    Thread.sleep(10);
+                                                    progressDoalog.dismiss();
+                                                }
+                                                if (isProcessed==true) {
+                                                    startActivity(intentCheckPicture);
+>>>>>>> Stashed changes
                                                 }
                                             } catch (Exception e) {
                                                 e.printStackTrace();
+                                            }
+                                            finally {
+                                                if (processing == true && isProcessed==true){
+                                                    Thread.sleep(10);
+                                                    startActivity(intentCheckPicture);
+                                                }
                                             }
                                         }
                                     } catch (Exception e) {
@@ -219,6 +262,10 @@ public class CustomCamera extends AppCompatActivity {
                         }
                         mLastClickTime = SystemClock.elapsedRealtime();
                         hide_nav.setVisibility(View.VISIBLE);
+                        PackageManager packageManager = getPackageManager();
+                        mPreview.setFlash(packageManager, false);
+                        flashModeButton.setBackgroundResource(R.drawable.ic_flash_off_24dp);
+                        mFlashMode = false;
                         click = false;
                         Intent intent = new Intent(CustomCamera.this, SubmitIdTest.class);
                         startActivity(intent);
@@ -230,7 +277,12 @@ public class CustomCamera extends AppCompatActivity {
             e.printStackTrace();
         }
     }
+<<<<<<< Updated upstream
 
+=======
+    //============
+    //=========
+>>>>>>> Stashed changes
     private void hideSystemUI() {
         // Set the IMMERSIVE flag.
         // Set the content to appear under the system bars so that the content
@@ -244,12 +296,11 @@ public class CustomCamera extends AppCompatActivity {
                         | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
                         | View.SYSTEM_UI_FLAG_IMMERSIVE);
     }
-
     /** A safe way to get an instance of the Camera object. */
     public static Camera getCameraInstance(){
         Camera c = null;
         try {
-            c = Camera.open(); // attempt to get a Camera instance
+            c = Camera.open(Camera.CameraInfo.CAMERA_FACING_BACK); // attempt to get a Camera instance
         }
         catch (Exception e){
             // Camera is not available (in use or does not exist)

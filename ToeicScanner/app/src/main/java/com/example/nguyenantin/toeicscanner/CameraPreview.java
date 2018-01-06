@@ -17,14 +17,24 @@ import java.io.IOException;
  */
 
 public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback{
+<<<<<<< Updated upstream
     private SurfaceHolder mHolder;
     private Camera mCamera;
     private Context context = null;
     private static String TAG = "CameraPreview";
+=======
+
+    private static SurfaceHolder mHolder;
+    private static Context context = null;
+    private static String TAG = "Show";
+    private static Camera mCamera;
+>>>>>>> Stashed changes
 
     public CameraPreview(Context context, Camera camera) {
         super(context);
         try {
+            //=======================================
+            //=======================================
             mCamera = camera;
 //        camera.setZoomChangeListener(1,false,mCamera);
             // Install a SurfaceHolder.Callback so we get notified when the
@@ -41,46 +51,42 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             e.printStackTrace();
         }
     }
-
+    //
+    //
     public void surfaceCreated(SurfaceHolder holder) {
-        // The Surface has been created, now tell the camera where to draw the preview.
         try {
+//            synchronized (holder){
+//                Draw();
+//            }
             mCamera.setPreviewDisplay(holder);
             mCamera.startPreview();
 
+<<<<<<< Updated upstream
+=======
+            startFaceDetection(); // start face detection feature
+>>>>>>> Stashed changes
         } catch (IOException e) {
             Log.d(TAG, "Error setting camera preview: " + e.getMessage());
         }
-        try {
-            // The Surface has been created, now tell the camera where to draw the preview.
-            Camera.Parameters params = mCamera.getParameters();
-            // set the focus mode
-            params.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
-            //*EDIT*//params.setFocusMode("continuous-picture");
-            //It is better to use defined constraints as opposed to String, thanks to AbdelHady
-            params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
-        }
-        catch (Exception e){
-            e.printStackTrace();
-        }
     }
+    ////////////
 
-    public void surfaceDestroyed(SurfaceHolder holder) {
-        // empty. Take care of releasing the Camera preview in your activity.
-    }
-    public boolean onTouchEvent(MotionEvent event){
+    //////////////
+    ////////////////////////////////////////////////////////////
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
             Log.d("down", "focusing now");
             try {
                 mCamera.autoFocus(null);
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
             return false;
         }
         return true;
     }
+
     public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
         // If your preview can change or rotate, take care of those events here.
         // Make sure to stop the preview before resizing or reformatting it.
@@ -105,8 +111,29 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         try {
             mCamera.setPreviewDisplay(mHolder);
             mCamera.startPreview();
+
+            startFaceDetection(); // re-start face detection feature
+
         } catch (Exception e){
             Log.d(TAG, "Error starting camera preview: " + e.getMessage());
+        }
+    }
+    //=====================================
+
+    //=====================================
+
+    public void surfaceDestroyed(SurfaceHolder holder) {
+        // empty. Take care of releasing the Camera preview in your activity.
+    }
+
+    public void startFaceDetection(){
+        // Try starting Face Detection
+        Camera.Parameters params = mCamera.getParameters();
+
+        // start face detection only *after* preview has started
+        if (params.getMaxNumDetectedFaces() > 0){
+            // camera supports face detection, so can start it:
+            mCamera.startFaceDetection();
         }
     }
     //Open Flash
