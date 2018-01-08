@@ -11,10 +11,7 @@ import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-<<<<<<< Updated upstream
-=======
 import android.os.Build;
->>>>>>> Stashed changes
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -44,67 +41,51 @@ import org.opencv.imgcodecs.Imgcodecs;
 
 public class CustomCamera extends AppCompatActivity {
 
-    private Button btn_back;
-    private Button captureButton;
-    Camera mCamera;
+    private Button btn_back = null;
+    private Button captureButton = null;
+    private FrameLayout preview = null;
+    Camera mCamera = null;
     private FragmentManager fm = getSupportFragmentManager();
-    CameraPreview mPreview;
-    private static final String TAG = "CustomCamera";
-    private static AssetManager assetManager;
+    CameraPreview mPreview  = null;
+    private final String TAG = "CustomCamera";
+    private AssetManager assetManager  = null;
+    // Loads camera view of OpenCV for us to use. This lets us see using OpenCV
+    // Used in Camera selection from menu (when implemented)
+    private LinearLayout hide_nav  = null;
 
-    private LinearLayout hide_nav;
     // use OpenCv in component
-
     static{
         OpenCVLoader.initDebug();
     }
-
     private long mLastClickTime = 0;
-    private ProgressDialog progressDialog;
+    private ProgressDialog progressDoalog  = null;
     private boolean click = true;
     private boolean mFlashMode = false;
     //
-    private Intent intentCheckPicture;
-    private Mat inputImg;
-    private Mat processedImage;
+    private Intent intentCheckPicture  = null;
+    private Mat inputImg  = null;
+    private Mat processedImage  = null;
     private boolean processing = false;
     private ToeicScanner scanner = new ToeicScanner();
-    private char[] arrResultAnswer;
+    private char[] arrResultAnswer  = null;
     private boolean isProcessed = false;    // check align process
 
-<<<<<<< Updated upstream
-
-=======
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
->>>>>>> Stashed changes
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    public void onCreate(@Nullable Bundle savedInstanceState) {
         hideSystemUI();
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_custom_camera);
-<<<<<<< Updated upstream
-
-        try {
-            LoadTemplate();
-        }
-        catch (Exception e){
-            e.printStackTrace();
-        }
-=======
         //
->>>>>>> Stashed changes
         // permission camera
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                 == PackageManager.PERMISSION_DENIED)
             ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.CAMERA}, 100);
-
         // Controller
-        FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
+        preview = (FrameLayout) findViewById(R.id.camera_preview);
         captureButton = (Button)findViewById(R.id.btn_takepicture);
         btn_back = (Button)findViewById(R.id.btn_back);
         hide_nav = (LinearLayout) findViewById(R.id.hide_nav);
-
         // Create an instance of Camera
         mCamera = getCameraInstance();
 
@@ -114,11 +95,8 @@ public class CustomCamera extends AppCompatActivity {
         // Create our Preview view and set it as the content of our activity.
         mPreview = new CameraPreview(this, mCamera);
         preview.addView(mPreview);
-
         Toast.makeText(CustomCamera.this, "Align Your Test Center", Toast.LENGTH_SHORT).show();
-
         final Button flashModeButton = (Button) findViewById(R.id.flashModeButton);
-
         try {
             flashModeButton.setOnClickListener(new View.OnClickListener() {
 
@@ -142,7 +120,6 @@ public class CustomCamera extends AppCompatActivity {
         catch (Exception e){
             e.printStackTrace();
         }
-
         //Activity in component
         hide_nav.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -150,36 +127,27 @@ public class CustomCamera extends AppCompatActivity {
                 hideSystemUI();
             }
         });
-
         try {
             captureButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     try {
                         if (click == true) {
+                            try {
+                                LoadTemplate();
+                            }
+                            catch (Exception e){
+                                e.printStackTrace();
+                            }
                             mCamera.takePicture(null, null, mPicture);
                             hide_nav.setVisibility(View.VISIBLE);
                             captureButton.setVisibility(View.VISIBLE);
                             // mis-clicking prevention, using threshold of 1000 ms
-<<<<<<< Updated upstream
-                            if (SystemClock.elapsedRealtime() - mLastClickTime < 60000){
-=======
                             if (SystemClock.elapsedRealtime() - mLastClickTime < 3000){
->>>>>>> Stashed changes
                                 return;
                             }
                             mLastClickTime = SystemClock.elapsedRealtime();
                             click = false;
-<<<<<<< Updated upstream
-                            progressDialog = new ProgressDialog(CustomCamera.this);
-                            progressDialog.setMax(100);
-                            progressDialog.setTitle("Image is processing, please wait!");
-                            progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-                            progressDialog.setCancelable(false);
-                            progressDialog.setCanceledOnTouchOutside(false);
-                            progressDialog.show();
-
-=======
                             progressDoalog = new ProgressDialog(CustomCamera.this);
                             progressDoalog.setMax(100);
                             progressDoalog.setTitle("Image is processing, please wait!!!");
@@ -188,34 +156,30 @@ public class CustomCamera extends AppCompatActivity {
                             progressDoalog.setCanceledOnTouchOutside(false);
                             progressDoalog.show();
                             final PackageManager packageManager = getPackageManager();
->>>>>>> Stashed changes
                             new Thread(new Runnable() {
                                 @Override
                                 public void run() {
                                     try {
-                                        hideSystemUI();
-                                        PackageManager packageManager = getPackageManager();
-                                        mPreview.setFlash(packageManager, false);
-                                        flashModeButton.setBackgroundResource(R.drawable.ic_flash_off_24dp);
                                         while (processing == false) {
                                             try {
+                                                if(mFlashMode == true) {
+                                                    mPreview.setFlash(packageManager, false);
+                                                    flashModeButton.setBackgroundResource(R.drawable.ic_flash_off_24dp);
+                                                    mFlashMode = false;
+                                                }
                                                 Thread.sleep(10);
-
-                                                mFlashMode = false;
                                                 handle.sendMessage(handle.obtainMessage());
-<<<<<<< Updated upstream
-                                                if (processing == true) {
-                                                    progressDialog.dismiss();
-=======
                                                 if (processing == true){
                                                     Thread.sleep(10);
                                                     progressDoalog.dismiss();
                                                 }
                                                 if (isProcessed==true) {
                                                     startActivity(intentCheckPicture);
->>>>>>> Stashed changes
                                                 }
-                                            } catch (Exception e) {
+                                            } catch (InterruptedException e) {
+                                                Thread.currentThread().interrupt();
+                                            }
+                                            catch (Exception e){
                                                 e.printStackTrace();
                                             }
                                             finally {
@@ -238,11 +202,11 @@ public class CustomCamera extends AppCompatActivity {
 
                 }
 
-                Handler handle = new Handler() {
+                private Handler handle = new Handler() {
                     @Override
                     public void handleMessage(Message msg) {
                         super.handleMessage(msg);
-                        progressDialog.incrementProgressBy(1);
+                        progressDoalog.incrementProgressBy(1);
                     }
                 };
             });
@@ -277,12 +241,8 @@ public class CustomCamera extends AppCompatActivity {
             e.printStackTrace();
         }
     }
-<<<<<<< Updated upstream
-
-=======
     //============
     //=========
->>>>>>> Stashed changes
     private void hideSystemUI() {
         // Set the IMMERSIVE flag.
         // Set the content to appear under the system bars so that the content
@@ -297,7 +257,7 @@ public class CustomCamera extends AppCompatActivity {
                         | View.SYSTEM_UI_FLAG_IMMERSIVE);
     }
     /** A safe way to get an instance of the Camera object. */
-    public static Camera getCameraInstance(){
+    private static Camera getCameraInstance(){
         Camera c = null;
         try {
             c = Camera.open(Camera.CameraInfo.CAMERA_FACING_BACK); // attempt to get a Camera instance
@@ -310,6 +270,7 @@ public class CustomCamera extends AppCompatActivity {
 
     ///=================================================
     private PictureCallback mPicture = new PictureCallback() {
+
         @Override
         public void onPictureTaken(byte[] data, Camera camera) {
             try {
@@ -330,10 +291,9 @@ public class CustomCamera extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
-
     };
 
-
+    //
     @Override
     protected void onPause() {
         super.onPause();
@@ -347,9 +307,11 @@ public class CustomCamera extends AppCompatActivity {
         }
     }
 
-    public void ButtonProcess() throws IOException {
+    /////================================================
+    private void ButtonProcess() throws IOException {
         try {
             Log.e(TAG, "captureButton: Click");
+//        processedImage = Process(inputImage);
 
             try {
                 processedImage = Process(inputImg);
@@ -369,28 +331,26 @@ public class CustomCamera extends AppCompatActivity {
             intentCheckPicture.putExtra("isProcessed", isProcessed);
 
             Log.e(TAG, "captureButton: Done");
-            startActivity(intentCheckPicture);
         }
         catch (Exception e){
             e.printStackTrace();
         }
     }
 
-    public Mat Process(Mat img) throws IOException {
+    private Mat I_temp = new Mat();
+    private Mat Process(Mat img) throws IOException {
         try {
             Log.e("Show input image size", img.size().toString());
-            Mat I_temp = new Mat();
 
             // process image take to camera
             I_temp = scanner.DetectROI(img);
 
+//        Log.e(TAG, "GetSquare " + scanner.GetSquare().toString());
             isProcessed = scanner.AlignProcess();
-
             if (isProcessed == false) {
                 DFragment alertdFragment = new DFragment();
-                alertdFragment.show(fm, "Image wasn't processed. Please, capture again!");
+                alertdFragment.show(fm, "Image wasn't processed. Please, come back take picture!!");
             }
-
             Log.e(TAG, "isProcessed " + isProcessed);
 
             arrResultAnswer = scanner.GetAnswers().toString().toCharArray(); // String result frome array char
@@ -400,38 +360,40 @@ public class CustomCamera extends AppCompatActivity {
             Log.e("Show size item", scanner.GetResultAlign().size().toString());
 
             I_temp = scanner.GetResultAlign();
-
-//            scanner.Reset();
             processing = true;
             return I_temp;
-
         } catch (Exception e) {
             e.printStackTrace();
         }
         return img;
     }
-
+    //function load teamplate
     private void LoadTemplate(){
         Log.e(TAG, "Load Template");
         try {
             assetManager = getAssets();
             String filename = "image/template.jpg";
-            InputStream img = assetManager.open(filename);
+            InputStream img = img = assetManager.open(filename);
             Bitmap bitmap_templates = BitmapFactory.decodeStream(img);
-
-//            if(bitmap_templates.toString()!=null ){
-//                Log.e(TAG, "I_templates null, please extra!!! ");
-//            }
-
+            if(bitmap_templates.toString()!=null ){
+                Log.e(TAG, "I_templates null, please extra!!! ");
+            }
             Mat I_templates = new Mat(bitmap_templates.getHeight(), bitmap_templates.getWidth(), CvType.CV_8UC3);
+            //
             I_templates.setTo(Scalar.all(0));
-            Bitmap bmp32 = bitmap_templates.copy(Bitmap.Config.ARGB_8888, true);
-            Utils.bitmapToMat(bmp32, I_templates);
-
+            try {
+                Bitmap bmp32 = null;
+                bmp32 = bitmap_templates.copy(Bitmap.Config.ARGB_8888, true);
+                Utils.bitmapToMat(bmp32, I_templates);
+            }
+            catch (Exception e){
+                e.printStackTrace();
+            }
+            //
+            //
             if(I_templates.empty()){
                 Log.e(TAG, "I_templates null, please extra!!! ");
             }
-
             Log.e(TAG, "I_templates size: " + I_templates.size().toString());
 
             scanner.LoadTemplate(I_templates);

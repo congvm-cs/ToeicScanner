@@ -17,18 +17,11 @@ import java.io.IOException;
  */
 
 public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback{
-<<<<<<< Updated upstream
-    private SurfaceHolder mHolder;
-    private Camera mCamera;
-    private Context context = null;
-    private static String TAG = "CameraPreview";
-=======
 
     private static SurfaceHolder mHolder;
     private static Context context = null;
     private static String TAG = "Show";
     private static Camera mCamera;
->>>>>>> Stashed changes
 
     public CameraPreview(Context context, Camera camera) {
         super(context);
@@ -61,10 +54,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             mCamera.setPreviewDisplay(holder);
             mCamera.startPreview();
 
-<<<<<<< Updated upstream
-=======
             startFaceDetection(); // start face detection feature
->>>>>>> Stashed changes
         } catch (IOException e) {
             Log.d(TAG, "Error setting camera preview: " + e.getMessage());
         }
